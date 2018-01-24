@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 07.10.2017
+# Changed: 24.01.2018
 
 import sys
 import os
@@ -32,6 +32,7 @@ class Root(QWidget):
             QRadioButton#child-element {font:bold 10px Arial;color:#757575;padding:2px 8px 2px 4px;}
             QRadioButton#child-element::checked {background:#4797ce;border-radius:10px;color:#fff;}
             QRadioButton#child-element::indicator {width:0;}
+            QToolButton#refresh {border:none;}
             QTableWidget {border: 1px solid #c6c6c6; font:bold 11px Arial; color: #8e8e8e;}
             QHeaderView::section {border-top: 0px solid #8a8a8a; border-left: 0px solid #8a8a8a;
                 border-right: 0px solid #d9d9d9; border-bottom: 1px solid #ccc; font: bold 12px Arial; background:#fff;
@@ -176,6 +177,7 @@ class Root(QWidget):
         main_layout.addWidget(bar_top)
         main_layout.addLayout(second_layout)
         self.setLayout(main_layout)
+        self.pass_input.setFocus(True)
         # QTimer
         self.bg_timeout = QTimer(self)
         self.bg_timeout.setInterval(3000)
@@ -268,6 +270,15 @@ class Root(QWidget):
         self.clear_child_table()
         self.current_parent = sender
         # Create Childs
+        self.refresh_element = QToolButton()
+        self.refresh_element.setObjectName('refresh')
+        self.refresh_element.setIcon(QIcon(':/refresh'))
+        self.refresh_element.setIconSize(QSize(22, 22))
+        self.refresh_element.setCursor(Qt.PointingHandCursor)
+        self.refresh_element.clicked.connect(lambda: self.get_keys(True, refresh=self.refresh_element.statusTip()))
+        self.refresh_element.setEnabled(False)
+        self.second_layout_keys_childs.addWidget(self.refresh_element)
+        self.second_layout_keys_childs.addSpacing(5)
         query = self.conn.execute("SELECT DISTINCT child FROM passwords WHERE parent=? ORDER BY child ASC", (sender,))
         for item in query.fetchall():
             child_element = QRadioButton()
@@ -279,14 +290,17 @@ class Root(QWidget):
             self.second_layout_keys_childs.addWidget(child_element)
             self.second_layout_keys_childs.addSpacing(5)
 
-    def get_keys(self):
+    def get_keys(self, status, refresh=None):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
+        sender = self.sender().text() if not refresh else refresh
         query = self.conn.execute(
             "SELECT id, title, login, email, url, phone, created, modified FROM passwords WHERE child=? ORDER BY title ASC",
-            (self.sender().text(),))
+            (sender,))
         self.build_table_rows(query)
         self.table.setSortingEnabled(True)
+        self.refresh_element.setEnabled(True)
+        self.refresh_element.setStatusTip(sender)
 
     def click_item(self, row, column):
         if column == 3:
@@ -312,7 +326,7 @@ class Root(QWidget):
         search_line = self.search_field.text().strip()
         if search_line:
             result_t = []
-            query = self.conn.execute("SELECT id, title, login, email, url from passwords ORDER BY id ASC")
+            query = self.conn.execute("SELECT id, title, login, email, url FROM passwords ORDER BY id ASC")
             for items in query.fetchall():
                 for item in items[1:]:
                     if search_line in item:
@@ -590,7 +604,7 @@ class AddNewKey(QFrame):
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "0.0.1"
+    __version__ = "1.0.1"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()
