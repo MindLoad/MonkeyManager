@@ -5,12 +5,11 @@ Password Manager `monkey.py`
 
 ## Dependencies:
 
-- Python **3.6**
-- PyQt **5.8**
-- PyCrypto **2.6.1** 
+- **pip install PyQt5**
+install PyCrypto with pip [pypi *tar.gz](https://pypi.python.org/pypi/pycrypto).
+or
 
 Download and Install PyQt5 from source: [Riverbank](https://www.riverbankcomputing.com/software/pyqt/download5).
-Install PyCrypto with pip or from [pypi *tar.gz](https://pypi.python.org/pypi/pycrypto).
 
 ## How to use:
 
