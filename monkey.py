@@ -1,52 +1,33 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 24.01.2018
+# Changed: 6.7.2019
 
 import sys
 import os
 import sqlite3
-import encrypt_m
 import source
 
 from datetime import datetime
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel,\
-    QTableWidget, QTableWidgetItem, QAbstractItemView, QRadioButton, QPushButton, QFrame, QComboBox, QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel,
+                             QTableWidget, QTableWidgetItem, QAbstractItemView, QRadioButton, QPushButton,
+                             QFrame, QComboBox, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QRect, QTimer, QEvent
 from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent
 
+from tools import encrypt
+from styles import qwidget_css, qframe_css
+
 
 class Root(QWidget):
+    """
+    Root application widget
+    """
+
     def __init__(self, parent=None):
-        super(Root, self).__init__(parent)
-        self.c = sqlite3.connect(os.path.dirname(os.path.realpath(__file__)) + "/crypt.db")
-        self.conn = self.c.cursor()
-        self.setStyleSheet("""
-            QWidget#bar_top {background:#fff;border-bottom:1px solid #c6c6c6;}
-            QLabel#logo {background:#4797ce;border-bottom:1px solid #00365c;}
-            QWidget#bar_menu {background:#00365c;}
-            QWidget#bar_key {background:#eaeaea;}
-            QLineEdit#pass_input {border:none;font:bold 12px Arial;color:#636363;border-left:1px solid #c6c6c6;border-bottom:1px solid #c6c6c6;padding:0 30px;}
-            QToolButton#add_new {font:bold 12px Arial;color:#6089a6;border:none;padding:0 30px;border-left:1px solid #c6c6c6;}
-            QPushButton#menu_button {background:#00365c;color:#9bb0bf;border:none;font:bold 13px Arial;}
-            QRadioButton#child-element {font:bold 10px Arial;color:#757575;padding:2px 8px 2px 4px;}
-            QRadioButton#child-element::checked {background:#4797ce;border-radius:10px;color:#fff;}
-            QRadioButton#child-element::indicator {width:0;}
-            QToolButton#refresh {border:none;}
-            QTableWidget {border: 1px solid #c6c6c6; font:bold 11px Arial; color: #8e8e8e;}
-            QHeaderView::section {border-top: 0px solid #8a8a8a; border-left: 0px solid #8a8a8a;
-                border-right: 0px solid #d9d9d9; border-bottom: 1px solid #ccc; font: bold 12px Arial; background:#fff;
-                height:45px; color:#325d7c;padding-left:20px;}
-            QHeaderView::up-arrow {image: url(:/header-up);width:18px;height:18px;}
-            QHeaderView::down-arrow {image: url(:/header-down);width:18px;height:18px;}
-            QTableView::item {border-bottom: 1px solid #ccc;padding-left:20px;}
-            QTableView::item:selected {background:#f2faff; color:#578dc9;}
-            QScrollBar:horizontal {border: none; background: #a5c8ed; height: 3px;}
-            QScrollBar::handle:horizontal {max-width: 0; background: #4797ce;}
-            QScrollBar:vertical {border: none; background: #a5c8ed; width: 4px;}
-            QScrollBar::handle:vertical {max-height: 0; background: #4797ce;}
-            QLabel#search_result {font:12px Arial;color:#646464;}
-        """)
+        super(Root, self).__init__(parent, flags=Qt.WindowTitleHint)
+        self.connection, self.cursor = self.get_connection()
+        self.setStyleSheet(qwidget_css.root_style)
         # Static variables
         self.current_parent = self._add = None
         # Effects
@@ -93,12 +74,7 @@ class Root(QWidget):
         self.search_field.setMaxLength(50)
         self.search_field.setPlaceholderText("search field")
         self.search_field.returnPressed.connect(self.go_search)
-        self.search_field.setStyleSheet("border-radius:23px; background:#fff; border:1px solid #c6c6c6; padding:0 30px;"
-                                   "font:13px Arial;"
-                                   "color:#636363;"
-                                   "background-image: url(:/search);"
-                                   "background-repeat: no-repeat;"
-                                   "background-position: left;")
+        self.search_field.setStyleSheet(qwidget_css.search_field_style)
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setColumnWidth(0, 160)
@@ -183,13 +159,26 @@ class Root(QWidget):
         self.bg_timeout.setInterval(3000)
         self.bg_timeout.timeout.connect(self.back_to_white)
 
+    def get_connection(self):
+        """
+        Connect to Sqlite source
+        :return: sqlite connection, cursor
+        """
+
+        c = sqlite3.connect(os.path.dirname(os.path.realpath(__file__)) + "/crypt.db")
+        return c, c.cursor()
+
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Delete and self.table.currentRow() >= 0:
                 row = self.table.currentRow()
                 row_id = self.table.item(row, 3).statusTip()
-                self.conn.execute("DELETE FROM passwords WHERE id=?", (row_id,))
-                self.c.commit()
+                sql = """
+                    DELETE FROM passwords
+                    WHERE id=?
+                """
+                self.cursor.execute(sql, (row_id,))
+                self.connection.commit()
                 self.table.removeRow(row)
             elif event.key() == Qt.Key_F4 and self.table.currentRow() >= 0:
                 if not self.pass_input.text().strip():
@@ -219,7 +208,7 @@ class Root(QWidget):
         if not self.pass_input.text().strip():
             self.secret_key_filter()
             return
-        self._add = AddNewKey(self.c, self.conn, self.pass_input.text(), arg)
+        self._add = AddNewKey(self.connection, self.cursor, self.pass_input.text(), arg)
         self._add.show()
 
     def clear_child_table(self):
@@ -279,7 +268,13 @@ class Root(QWidget):
         self.refresh_element.setEnabled(False)
         self.second_layout_keys_childs.addWidget(self.refresh_element)
         self.second_layout_keys_childs.addSpacing(5)
-        query = self.conn.execute("SELECT DISTINCT child FROM passwords WHERE parent=? ORDER BY child ASC", (sender,))
+        sql = """
+            SELECT DISTINCT child
+            FROM passwords
+            WHERE parent=?
+            ORDER BY child ASC
+        """
+        query = self.cursor.execute(sql, (sender,))
         for item in query.fetchall():
             child_element = QRadioButton()
             child_element.setObjectName("child-element")
@@ -294,8 +289,14 @@ class Root(QWidget):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
         sender = self.sender().text() if not refresh else refresh
-        query = self.conn.execute(
-            "SELECT id, title, login, email, url, phone, created, modified FROM passwords WHERE child=? ORDER BY title ASC",
+        sql = """
+            SELECT id, title, login, email, url, phone, created, modified
+            FROM passwords
+            WHERE child=?
+            ORDER BY title ASC
+        """
+        query = self.cursor.execute(
+            sql,
             (sender,))
         self.build_table_rows(query)
         self.table.setSortingEnabled(True)
@@ -308,10 +309,15 @@ class Root(QWidget):
                 self.secret_key_filter()
                 return
             self.table.blockSignals(True)
-            query = self.conn.execute("SELECT password FROM passwords WHERE id=?", (self.table.currentItem().statusTip(),))
+            sql = """
+                SELECT password
+                FROM passwords
+                WHERE id=?
+            """
+            query = self.cursor.execute(sql, (self.table.currentItem().statusTip(),))
             fetch = query.fetchone()[0]
             if fetch:
-                result = encrypt_m.run_decode(self.pass_input.text(), fetch)
+                result = encrypt.run_decode(self.pass_input.text(), fetch)
                 try:
                     decode_res = result.decode("utf-8")
                 except UnicodeDecodeError:
@@ -326,7 +332,12 @@ class Root(QWidget):
         search_line = self.search_field.text().strip()
         if search_line:
             result_t = []
-            query = self.conn.execute("SELECT id, title, login, email, url FROM passwords ORDER BY id ASC")
+            sql = """
+                SELECT id, title, login, email, url
+                FROM passwords
+                ORDER BY id ASC
+            """
+            query = self.cursor.execute(sql)
             for items in query.fetchall():
                 for item in items[1:]:
                     if search_line in item:
@@ -339,8 +350,15 @@ class Root(QWidget):
                     result_t = f"({result_t[0]})"
                 else:
                     result_t = f"{tuple(result_t)}"
-                query = self.conn.execute(
-                    f"SELECT id, title, login, email, url, phone, created, modified FROM passwords WHERE id IN {result_t} ORDER BY id ASC")
+                query = self.cursor.execute(
+                    f"""
+                        SELECT id, title, login, email, url, phone, created, modified
+                        FROM passwords
+                        WHERE id
+                        IN {result_t}
+                        ORDER BY id ASC
+                    """
+                )
                 self.build_table_rows(query)
             else:
                 self.clear_child_table()
@@ -394,7 +412,8 @@ class MenuButton(QPushButton):
             painter.drawPixmap(27, 16, QPixmap(":/email"))
         else:
             painter.drawPixmap(30, 16, QPixmap(":/forum"))
-        painter.setPen(QColor("#9bb0bf")) if not self.enter and not self.check_mark else painter.setPen(QColor("#cadfee"))
+        painter.setPen(QColor("#9bb0bf")) if not self.enter and not self.check_mark else \
+            painter.setPen(QColor("#cadfee"))
         painter.drawText(70, 15, 140, 14, Qt.AlignLeft, self.title)
         if self.check_mark:
             painter.setBrush(QColor("#4797ce"))
@@ -408,7 +427,12 @@ class MenuButton(QPushButton):
             if element.check_mark:
                 element.check_mark = None
                 element.repaint()
-        query = main.conn.execute("SELECT COUNT(id) FROM passwords WHERE parent=?", (self.title,))
+        sql = """
+            SELECT COUNT(id)
+            FROM passwords
+            WHERE parent=?
+        """
+        query = main.cursor.execute(sql, (self.title,))
         self.check_mark = f"{query.fetchone()[0]}"
         main.get_childs(self.title)
 
@@ -423,31 +447,18 @@ class MenuButton(QPushButton):
 
 
 class AddNewKey(QFrame):
-    def __init__(self, c, conn, secret_key, data):
+    def __init__(self, connection, cursor, secret_key, data):
         super(AddNewKey, self).__init__(main)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.c = c
-        self.conn = conn
+        self.connection = connection
+        self.cursor = cursor
         self.secret_key = secret_key
         self.data = data
         self.w = main.width()
         self.h = main.height()
         self.setFixedSize(self.w, self.h)
         self.setObjectName("AddFrame")
-        self.setStyleSheet("""
-            QFrame#AddFrame {background:#eaeaea;}
-            QPushButton#close {border:none;}
-            QLineEdit#field {border-radius:20px;background:#fff;border:1px solid #b7b7b7;padding:0 30px;font:13px Arial;color:#808080;}
-            QPushButton#save {font: 14px Arial;color:#fff;background:#4797ce;border:none;}
-            QComboBox {font: 15px Arial;color:#808080;padding-left:10px;border: 1px solid #b7b7b7;background:#fff;height:28px;}
-            QComboBox::drop-down {subcontrol-origin:padding;subcontrol-position: top right;width:20px;border-top-right-radius:3px;border-bottom-right-radius:3px;}
-            QComboBox::down-arrow {image: url(:/down);padding-right:8px;}
-            QComboBox QAbstractItemView {background:#fff;padding:7px 5px 7px 5px;font:15px Arial;color:#808080;}
-            QComboBox QAbstractItemView::item {padding:4px;}
-            QRadioButton#child-element {font:bold 10px Arial;color:#646464;padding:2px 6px 3px 0;}
-            QRadioButton#child-element::checked {background:#4797ce;border-radius:10px;color:#fff;}
-            QRadioButton#child-element::indicator {width:0;}
-        """)
+        self.setStyleSheet(qframe_css.add_new_key_style)
         # Elements
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         close_button = QPushButton()
@@ -459,7 +470,9 @@ class AddNewKey(QFrame):
         if not self.data:
             self.combo = QComboBox()
             self.combo.setObjectName("combo")
-            self.combo.addItems(("Web Sites", "Web Accounts", "Emails", "Credit Cards", "E-commerce", "Secrets", "Forums"))
+            self.combo.addItems(
+                ("Web Sites", "Web Accounts", "Emails", "Credit Cards", "E-commerce", "Secrets", "Forums")
+            )
             self.combo.currentTextChanged.connect(self.generate_child_list)
             self.child = QLineEdit()
             self.child.setPlaceholderText("Branch *")
@@ -559,7 +572,13 @@ class AddNewKey(QFrame):
             curr_item = self.cc.takeAt(pos).widget()
             if curr_item is not None:
                 curr_item.deleteLater()
-        query = self.conn.execute("SELECT DISTINCT child FROM passwords WHERE parent=? ORDER BY child ASC", (self.combo.currentText(),))
+        sql = """
+            SELECT DISTINCT child
+            FROM passwords
+            WHERE parent=?
+            ORDER BY child ASC
+        """
+        query = self.cursor.execute(sql, (self.combo.currentText(),))
         for item in query.fetchall():
             r_elem = QRadioButton()
             r_elem.setObjectName("child-element")
@@ -574,16 +593,31 @@ class AddNewKey(QFrame):
         self.child.setText(self.sender().text())
 
     def _save(self):
-        crypt_password = encrypt_m.run_encode(self.secret_key, self.password.text().encode("utf-8"))
+        crypt_password = encrypt.run_encode(self.secret_key, self.password.text().encode("utf-8"))
         if not self.data:
-            self.conn.execute("INSERT INTO passwords (parent, child, title, login, email, password, url, phone, created, modified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                              (self.combo.currentText(), self.child.text(), self.title.text(), self.name.text(), self.email.text(),
-                               crypt_password, self.url.text(), self.phone.text(), self.created.text(), self.modified.text()))
+            sql = """
+                INSERT INTO passwords (parent, child, title, login, email, password, url, phone, created, modified)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            self.cursor.execute(sql,
+                                (
+                                    self.combo.currentText(), self.child.text(), self.title.text(), self.name.text(),
+                                    self.email.text(), crypt_password, self.url.text(), self.phone.text(),
+                                    self.created.text(), self.modified.text()
+                                ))
         else:
-            self.conn.execute("UPDATE passwords SET title=?, login=?, email=?, password=?, url=?, phone=?, modified=? WHERE id=?",
-                              (self.title.text(), self.name.text(), self.email.text(), crypt_password, self.url.text(),
-                               self.phone.text(), self.modified.text(), self.data[3]))
-        self.c.commit()
+            sql = """
+                UPDATE passwords
+                SET title=?, login=?, email=?, password=?, url=?, phone=?, modified=?
+                WHERE id=?
+            """
+            self.cursor.execute(
+                sql, (
+                    self.title.text(), self.name.text(), self.email.text(), crypt_password, self.url.text(),
+                    self.phone.text(), self.modified.text(), self.data[3]
+                )
+            )
+        self.connection.commit()
         self._close()
 
     def _close(self):
@@ -604,7 +638,7 @@ class AddNewKey(QFrame):
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()
