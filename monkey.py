@@ -72,7 +72,7 @@ class Root(QWidget):
         self.search_field = QLineEdit()
         self.search_field.setMinimumHeight(46)
         self.search_field.setMaxLength(50)
-        self.search_field.setPlaceholderText("search field")
+        self.search_field.setPlaceholderText("Search: fields[title, name, email, url] reg_search[any letter = %]")
         self.search_field.returnPressed.connect(self.go_search)
         self.search_field.setStyleSheet(qwidget_css.search_field_style)
         self.table = QTableWidget()
@@ -221,6 +221,13 @@ class Root(QWidget):
     def build_table_rows(self, query):
         items = query.fetchall()
         rows = len(items)
+        if rows == 0:
+            self.clear_child_table()
+            self.search_result = QLabel()
+            self.search_result.setObjectName("search_result")
+            self.search_result.setText("No results ...")
+            self.second_layout_keys_childs.addWidget(self.search_result)
+            return
         self.table.setRowCount(rows)
         for pos, item in enumerate(items):
             cell_title = QTableWidgetItem(item[1])
@@ -256,6 +263,8 @@ class Root(QWidget):
                 self.table.setRowHeight(row, 45)
 
     def get_childs(self, sender):
+        """ Generate sub dirs relevant to main menu element """
+
         self.clear_child_table()
         self.current_parent = sender
         # Create Childs
@@ -331,47 +340,17 @@ class Root(QWidget):
     def go_search(self):
         search_line = self.search_field.text().strip()
         if search_line:
-            result_t = []
             sql = """
-                SELECT id, title, login, email, url
+                SELECT id, title, login, email, url, phone, created, modified
                 FROM passwords
+                WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line) 
+                OR LOWER(email) LIKE LOWER(:search_line) OR LOWER(url) LIKE LOWER(:search_line)
                 ORDER BY id ASC
             """
-            query = self.cursor.execute(sql)
-            for items in query.fetchall():
-                for item in items[1:]:
-                    if search_line in item:
-                        result_t.append(items[0])
-                        break
-            if result_t:
-                self.current_parent = None
-                self.clear_child_table()
-                if len(result_t) == 1:
-                    result_t = f"({result_t[0]})"
-                else:
-                    result_t = f"{tuple(result_t)}"
-                query = self.cursor.execute(
-                    f"""
-                        SELECT id, title, login, email, url, phone, created, modified
-                        FROM passwords
-                        WHERE id
-                        IN {result_t}
-                        ORDER BY id ASC
-                    """
-                )
-                self.build_table_rows(query)
-            else:
-                self.clear_child_table()
-                self.s_result = QLabel()
-                self.s_result.setObjectName("search_result")
-                self.s_result.setText("No results found!")
-                self.second_layout_keys_childs.addWidget(self.s_result)
-        else:
-            self.clear_child_table()
-            self.s_result = QLabel()
-            self.s_result.setObjectName("search_result")
-            self.s_result.setText("Empty search line")
-            self.second_layout_keys_childs.addWidget(self.s_result)
+            query = self.cursor.execute(
+                sql, {"search_line": search_line}
+            )
+            self.build_table_rows(query)
 
 
 class MenuButton(QPushButton):
