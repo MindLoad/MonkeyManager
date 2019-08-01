@@ -344,7 +344,7 @@ class Root(QWidget):
             sql = """
                 SELECT id, title, login, email, url, phone, created, modified
                 FROM passwords
-                WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line) 
+                WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line)
                 OR LOWER(email) LIKE LOWER(:search_line) OR LOWER(url) LIKE LOWER(:search_line)
                 ORDER BY id ASC
             """
