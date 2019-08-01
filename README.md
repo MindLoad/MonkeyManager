@@ -5,16 +5,16 @@ Password Manager `monkey.py`
 
 ## UI:
 
-- PyQt
+- PyQt5
 
 ## Crypto libs
 
-- PyCrypto
+- pycryptodome
 
 ### libs from source:
 
 - Download and Install PyQt5 from source: [Riverbank](https://www.riverbankcomputing.com/software/pyqt/download5).
-- Install PyCrypto with pip or from [pypi *tar.gz](https://pypi.python.org/pypi/pycrypto).
+- Install pycryptodome: **pip install pycryptodome**
 
 ## Hot keys:
 

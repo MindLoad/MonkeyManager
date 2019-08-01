@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 # Created: 06.09.2017
-# Changed: 07.10.2017
-# __author__ = 'MindLoad'
+# Changed: 01.08.2019
+
+"""
+Module for encryption / decryption
+"""
+
+__author__ = 'MindLoad'
 
 import base64
 from Crypto import Random
