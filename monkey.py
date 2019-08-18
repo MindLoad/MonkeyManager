@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 01.08.2019
+# Changed: 18.08.2019
 
 import sys
 import os
@@ -17,6 +17,7 @@ from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, Q
 
 from tools import encrypt
 from styles import qwidget_css, qframe_css
+from services import SearchService
 
 
 class Root(QWidget):
@@ -158,6 +159,17 @@ class Root(QWidget):
         self.bg_timeout = QTimer(self)
         self.bg_timeout.setInterval(3000)
         self.bg_timeout.timeout.connect(self.back_to_white)
+        # Build extra elements
+        self.build_extra_elements()
+
+    def build_extra_elements(self):
+        """
+        Build extra UI elements
+        """
+
+        self.search_result = QLabel()
+        self.search_result.setObjectName("search_result")
+        self.second_layout_keys_childs.addWidget(self.search_result)
 
     @staticmethod
     def get_connection():
@@ -339,19 +351,12 @@ class Root(QWidget):
             self.table.blockSignals(False)
 
     def go_search(self):
-        search_line = self.search_field.text().strip()
-        if search_line:
-            sql = """
-                SELECT id, title, login, email, url, phone, created, modified
-                FROM passwords
-                WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line)
-                OR LOWER(email) LIKE LOWER(:search_line) OR LOWER(url) LIKE LOWER(:search_line)
-                ORDER BY id ASC
-            """
-            query = self.cursor.execute(
-                sql, {"search_line": search_line}
-            )
-            self.build_table_rows(query)
+        """ Search for relevant key in db """
+
+        search_service = SearchService(self.cursor, self.search_field.text())
+        results = search_service.search()
+        if results is not None:
+            self.build_table_rows(results)
 
 
 class MenuButton(QPushButton):
