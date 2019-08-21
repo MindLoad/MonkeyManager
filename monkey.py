@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 18.08.2019
+# Changed: 21.08.2019
 
 import sys
 import os
@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QToolButton, QHBo
                              QTableWidget, QTableWidgetItem, QAbstractItemView, QRadioButton, QPushButton,
                              QFrame, QComboBox, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QRect, QTimer, QEvent
-from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, QMouseEvent
+from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, QMouseEvent, QTransform, QImage
 
 from tools import encrypt
 from styles import qwidget_css, qframe_css
@@ -38,6 +38,7 @@ class Root(QWidget):
         effect.setBlurRadius(10)
         effect.setColor(QColor("#b4b4b4"))
         # Top Elements
+        # bar_top: QWidget which include first_layout as basic layout. First element of main_layout
         bar_top = QWidget()
         bar_top.setObjectName("bar_top")
         bar_top.setFixedHeight(50)
@@ -57,6 +58,7 @@ class Root(QWidget):
         self.pass_input.setPlaceholderText("secret key")
         self.pass_input.setEchoMode(QLineEdit.Password)
         # Second Elements menu
+        # bar_menu: QWidget which include second_layout_menu as basic layout. First element of second_layout
         bar_menu = QWidget()
         bar_menu.setObjectName("bar_menu")
         bar_menu.setFixedWidth(200)
@@ -69,6 +71,7 @@ class Root(QWidget):
         self.b7 = MenuButton("Forums")
         self.b8 = MenuButton("Software")
         # Keys Elements
+        # bar_key: QWidget which include second_layout_keys as basic layout. Second element of second_layout
         bar_key = QWidget()
         bar_key.setObjectName("bar_key")
         self.search_field = QLineEdit()
@@ -105,20 +108,26 @@ class Root(QWidget):
         self.table.installEventFilter(self)
         self.table.setGraphicsEffect(effect)
         # Layers
+        # main_layout: includes bar_top, second_layout. Main app layout
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
+        # first_layout: includes monkey logo, add button, secret input. Main layout for bar_top widget
         first_layout = QHBoxLayout()
         first_layout.setContentsMargins(0, 0, 0, 0)
+        # second_layout: includes widgets with menus and keys. Second element of main_layout
         second_layout = QHBoxLayout()
         second_layout.setContentsMargins(0, 0, 0, 0)
+        # second_layout_meny: Includes menu buttons. Main layout for bar_menu
         second_layout_menu = QVBoxLayout()
         second_layout_menu.setContentsMargins(0, 0, 0, 0)
         second_layout_menu.setSpacing(0)
+        # second_layout_keys: includes search field, second_layout_keys_child, table widget. Main layout for second_layout_keys
         self.second_layout_keys = QVBoxLayout()
         self.second_layout_keys.setSpacing(0)
         self.second_layout_keys.setContentsMargins(40, 0, 40, 0)
         self.second_layout_keys.setAlignment(Qt.AlignTop)
+        # second_layout_keys_childs. Includes sub keys and search result string. Placed under search field
         self.second_layout_keys_childs = QHBoxLayout()
         self.second_layout_keys_childs.setSpacing(0)
         self.second_layout_keys_childs.setContentsMargins(0, 0, 0, 4)
@@ -188,10 +197,8 @@ class Root(QWidget):
             if event.key() == Qt.Key_Delete and self.table.currentRow() >= 0:
                 row = self.table.currentRow()
                 row_id = self.table.item(row, 3).statusTip()
-                sql = """
-                    DELETE FROM passwords
-                    WHERE id=?
-                """
+                sql = "DELETE FROM passwords " \
+                      "WHERE id=?"
                 self.cursor.execute(sql, (row_id,))
                 self.connection.commit()
                 self.table.removeRow(row)
@@ -292,12 +299,10 @@ class Root(QWidget):
         self.refresh_element.setEnabled(False)
         self.second_layout_keys_childs.addWidget(self.refresh_element)
         self.second_layout_keys_childs.addSpacing(5)
-        sql = """
-            SELECT DISTINCT child
-            FROM passwords
-            WHERE parent=?
-            ORDER BY child ASC
-        """
+        sql = "SELECT DISTINCT child " \
+              "FROM passwords " \
+              "WHERE parent=? " \
+              "ORDER BY child ASC"
         query = self.cursor.execute(sql, (sender,))
         for item in query.fetchall():
             child_element = QRadioButton()
@@ -313,12 +318,10 @@ class Root(QWidget):
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
         sender = self.sender().text() if not refresh else refresh
-        sql = """
-            SELECT id, title, login, email, url, phone, created, modified
-            FROM passwords
-            WHERE child=?
-            ORDER BY title ASC
-        """
+        sql = "SELECT id, title, login, email, url, phone, created, modified " \
+              "FROM passwords " \
+              "WHERE child=? " \
+              "ORDER BY title ASC"
         query = self.cursor.execute(
             sql,
             (sender,))
@@ -327,17 +330,15 @@ class Root(QWidget):
         self.refresh_element.setEnabled(True)
         self.refresh_element.setStatusTip(sender)
 
-    def click_item(self, row, column):
+    def click_item(self, row, column, decode_res="unknown error"):
         if column == 3:
             if len(self.pass_input.text().strip()) == 0:
                 self.secret_key_filter()
                 return
             self.table.blockSignals(True)
-            sql = """
-                SELECT password
-                FROM passwords
-                WHERE id=?
-            """
+            sql = "SELECT password " \
+                  "FROM passwords " \
+                  "WHERE id=?"
             query = self.cursor.execute(sql, (self.table.currentItem().statusTip(),))
             fetch = query.fetchone()[0]
             if fetch:
@@ -424,11 +425,9 @@ class MenuButton(QPushButton):
             if element.check_mark:
                 element.check_mark = None
                 element.repaint()
-        sql = """
-            SELECT COUNT(id)
-            FROM passwords
-            WHERE parent=?
-        """
+        sql = "SELECT COUNT(id) " \
+              "FROM passwords " \
+              "WHERE parent=?"
         query = main.cursor.execute(sql, (self.title,))
         self.check_mark = f"{query.fetchone()[0]}"
         main.get_childs(self.title)
@@ -575,12 +574,10 @@ class AddNewKey(QFrame):
             curr_item = self.cc.takeAt(pos).widget()
             if curr_item is not None:
                 curr_item.deleteLater()
-        sql = """
-            SELECT DISTINCT child
-            FROM passwords
-            WHERE parent=?
-            ORDER BY child ASC
-        """
+        sql = "SELECT DISTINCT child " \
+              "FROM passwords " \
+              "WHERE parent=? " \
+              "ORDER BY child ASC"
         query = self.cursor.execute(sql, (self.combo.currentText(),))
         for item in query.fetchall():
             r_elem = QRadioButton()
@@ -598,10 +595,9 @@ class AddNewKey(QFrame):
     def _save(self):
         crypt_password = encrypt.run_encode(self.secret_key, self.password.text().encode("utf-8"))
         if not self.data:
-            sql = """
-                INSERT INTO passwords (parent, child, title, login, email, password, url, phone, created, modified)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
+            sql = "INSERT INTO passwords " \
+                  "(parent, child, title, login, email, password, url, phone, created, modified) " \
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             self.cursor.execute(sql,
                                 (
                                     self.combo.currentText(), self.child.text(), self.title.text(), self.name.text(),
@@ -609,11 +605,9 @@ class AddNewKey(QFrame):
                                     self.created.text(), self.modified.text()
                                 ))
         else:
-            sql = """
-                UPDATE passwords
-                SET title=?, login=?, email=?, password=?, url=?, phone=?, modified=?
-                WHERE id=?
-            """
+            sql = "UPDATE passwords " \
+                  "SET title=?, login=?, email=?, password=?, url=?, phone=?, modified=? " \
+                  "WHERE id=?"
             self.cursor.execute(
                 sql, (
                     self.title.text(), self.name.text(), self.email.text(), crypt_password, self.url.text(),
@@ -646,7 +640,7 @@ class AddNewKey(QFrame):
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()
