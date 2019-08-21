@@ -66,6 +66,7 @@ class Root(QWidget):
         self.b5 = MenuButton("Web Accounts")
         self.b6 = MenuButton("Emails")
         self.b7 = MenuButton("Forums")
+        self.b8 = MenuButton("Software")
         # Keys Elements
         bar_key = QWidget()
         bar_key.setObjectName("bar_key")
@@ -137,6 +138,7 @@ class Root(QWidget):
         second_layout_menu.addWidget(self.b4)
         second_layout_menu.addWidget(self.b3)
         second_layout_menu.addWidget(self.b7)
+        second_layout_menu.addWidget(self.b8)
         second_layout_menu.addStretch(1)
         bar_menu.setLayout(second_layout_menu)
         self.second_layout_keys.insertSpacing(0, 20)
@@ -389,6 +391,8 @@ class MenuButton(QPushButton):
             painter.drawPixmap(30, 16, QPixmap(":/webaccount"))
         elif self.title == "Emails":
             painter.drawPixmap(27, 16, QPixmap(":/email"))
+        elif self.title == "Software":
+            painter.drawPixmap(27, 16, QPixmap(":/software"))
         else:
             painter.drawPixmap(30, 16, QPixmap(":/forum"))
         painter.setPen(QColor("#9bb0bf")) if not self.enter and not self.check_mark else \
@@ -402,7 +406,7 @@ class MenuButton(QPushButton):
             painter.drawText(175, 15, 10, 14, Qt.AlignCenter, self.check_mark)
 
     def mousePressEvent(self, event):
-        for element in (main.b1, main.b2, main.b3, main.b4, main.b5, main.b6, main.b7):
+        for element in (main.b1, main.b2, main.b3, main.b4, main.b5, main.b6, main.b7, main.b8):
             if element.check_mark:
                 element.check_mark = None
                 element.repaint()
@@ -450,7 +454,7 @@ class AddNewKey(QFrame):
             self.combo = QComboBox()
             self.combo.setObjectName("combo")
             self.combo.addItems(
-                ("Web Sites", "Web Accounts", "Emails", "Credit Cards", "E-commerce", "Secrets", "Forums")
+                ("Web Sites", "Web Accounts", "Emails", "Credit Cards", "E-commerce", "Secrets", "Software", "Forums")
             )
             self.combo.currentTextChanged.connect(self.generate_child_list)
             self.child = QLineEdit()
