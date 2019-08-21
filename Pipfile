@@ -10,7 +10,7 @@ safety = "~=1.8"
 bandit = "~=1.6"
 
 [packages]
-pycrypto = "~=2.6"
+pycryptodome = "~=3.8.2"
 PyQt5 = "~=5.13"
 
 [requires]

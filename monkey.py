@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 6.7.2019
+# Changed: 18.08.2019
 
 import sys
 import os
@@ -13,10 +13,11 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QToolButton, QHBo
                              QTableWidget, QTableWidgetItem, QAbstractItemView, QRadioButton, QPushButton,
                              QFrame, QComboBox, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QRect, QTimer, QEvent
-from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent
+from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, QMouseEvent
 
 from tools import encrypt
 from styles import qwidget_css, qframe_css
+from services import SearchService
 
 
 class Root(QWidget):
@@ -25,7 +26,7 @@ class Root(QWidget):
     """
 
     def __init__(self, parent=None):
-        super(Root, self).__init__(parent, flags=Qt.WindowTitleHint)
+        super().__init__(parent, flags=Qt.WindowTitleHint)
         self.connection, self.cursor = self.get_connection()
         self.setStyleSheet(qwidget_css.root_style)
         # Static variables
@@ -160,8 +161,20 @@ class Root(QWidget):
         self.bg_timeout = QTimer(self)
         self.bg_timeout.setInterval(3000)
         self.bg_timeout.timeout.connect(self.back_to_white)
+        # Build extra elements
+        self.build_extra_elements()
 
-    def get_connection(self):
+    def build_extra_elements(self):
+        """
+        Build extra UI elements
+        """
+
+        self.search_result = QLabel()
+        self.search_result.setObjectName("search_result")
+        self.second_layout_keys_childs.addWidget(self.search_result)
+
+    @staticmethod
+    def get_connection():
         """
         Connect to Sqlite source
         :return: sqlite connection, cursor
@@ -223,7 +236,7 @@ class Root(QWidget):
     def build_table_rows(self, query):
         items = query.fetchall()
         rows = len(items)
-        if rows == 0:
+        if not rows:
             self.clear_child_table()
             self.search_result = QLabel()
             self.search_result.setObjectName("search_result")
@@ -261,8 +274,8 @@ class Root(QWidget):
             self.table.setItem(pos, 5, cell_phone)
             self.table.setItem(pos, 6, cell_created)
             self.table.setItem(pos, 7, cell_modified)
-            for row in range(rows):
-                self.table.setRowHeight(row, 45)
+        for row in range(rows):
+            self.table.setRowHeight(row, 45)
 
     def get_childs(self, sender):
         """ Generate sub dirs relevant to main menu element """
@@ -340,24 +353,20 @@ class Root(QWidget):
             self.table.blockSignals(False)
 
     def go_search(self):
-        search_line = self.search_field.text().strip()
-        if search_line:
-            sql = """
-                SELECT id, title, login, email, url, phone, created, modified
-                FROM passwords
-                WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line) 
-                OR LOWER(email) LIKE LOWER(:search_line) OR LOWER(url) LIKE LOWER(:search_line)
-                ORDER BY id ASC
-            """
-            query = self.cursor.execute(
-                sql, {"search_line": search_line}
-            )
-            self.build_table_rows(query)
+        """ Search for relevant key in db """
+
+        search_service = SearchService(self.cursor, self.search_field.text())
+        results = search_service.search()
+        if results is not None:
+            self.build_table_rows(results)
 
 
 class MenuButton(QPushButton):
-    def __init__(self, title, parent=None):
-        super(MenuButton, self).__init__(parent)
+    def __init__(
+            self,
+            title: str,
+            parent=None):
+        super().__init__(parent)
         self.setFixedSize(200, 45)
         self.setCursor(Qt.PointingHandCursor)
         self.setObjectName("menu_button")
@@ -405,7 +414,12 @@ class MenuButton(QPushButton):
             painter.setPen(QColor("#7e8c96"))
             painter.drawText(175, 15, 10, 14, Qt.AlignCenter, self.check_mark)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(
+            self,
+            event: QMouseEvent
+    ) -> None:
+        """ Intercept mouse click event """
+
         for element in (main.b1, main.b2, main.b3, main.b4, main.b5, main.b6, main.b7, main.b8):
             if element.check_mark:
                 element.check_mark = None
@@ -419,7 +433,13 @@ class MenuButton(QPushButton):
         self.check_mark = f"{query.fetchone()[0]}"
         main.get_childs(self.title)
 
-    def eventFilter(self, source, event):
+    def eventFilter(
+            self,
+            source,
+            event: QEvent
+    ) -> QPushButton:
+        """ Override logic on event """
+
         if event.type() == 10:
             self.enter = True
             self.update()
@@ -431,7 +451,7 @@ class MenuButton(QPushButton):
 
 class AddNewKey(QFrame):
     def __init__(self, connection, cursor, secret_key, data):
-        super(AddNewKey, self).__init__(main)
+        super().__init__(main)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.connection = connection
         self.cursor = cursor
@@ -614,7 +634,12 @@ class AddNewKey(QFrame):
         self.deleteLater()
         main._add = None
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(
+            self,
+            event: QEvent
+    ) -> None:
+        """ Track key press """
+
         if event.key() == Qt.Key_Escape:
             self._close()
 
