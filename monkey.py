@@ -16,8 +16,8 @@ from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QRect, QTimer, QEvent
 from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, QMouseEvent, QTransform, QImage
 
 from tools import encrypt
-from styles import qwidget_css, qframe_css
-from services import SearchService
+from styles import qwidget_css, qframe_css, qlabel_css
+from services import SearchService, FontService
 
 
 class Root(QWidget):
@@ -172,6 +172,15 @@ class Root(QWidget):
         self.bg_timeout.timeout.connect(self.back_to_white)
         # Build extra elements
         self.build_extra_elements()
+
+    @property
+    def currently_checked_menu_button(self):
+        """ return menu button that was clicked last """
+
+        for button in (self.b1, self.b2, self.b3, self.b4, self.b5, self.b6, self.b7, self.b8):
+            if button.check_mark is not None:
+                return button
+        return None
 
     def build_extra_elements(self):
         """
@@ -373,11 +382,13 @@ class MenuButton(QPushButton):
         self.setObjectName("menu_button")
         self.title = title
         self.check_mark = None
-        self.font = QFont()
-        self.font.setFamily("Arial")
-        self.font.setPixelSize(11)
-        self.font.setBold(True)
+        self.font = FontService("Verdana", 11, True).get_font()
         self.enter = False
+        self.count_label = QLabel(self)
+        self.count_label.setText('test')
+        self.count_label.setFont(self.font)
+        self.count_label.setStyleSheet(qlabel_css.menu_button_count_style)
+        self.count_label.setGeometry(200, 0, 30, 45)
         self.installEventFilter(self)
 
     def paintEvent(self, event):
@@ -411,9 +422,6 @@ class MenuButton(QPushButton):
         if self.check_mark:
             painter.setBrush(QColor("#4797ce"))
             painter.drawRect(0, 0, 3, 45)
-            painter.setFont(self.font)
-            painter.setPen(QColor("#7e8c96"))
-            painter.drawText(175, 15, 10, 14, Qt.AlignCenter, self.check_mark)
 
     def mousePressEvent(
             self,
@@ -421,16 +429,28 @@ class MenuButton(QPushButton):
     ) -> None:
         """ Intercept mouse click event """
 
-        for element in (main.b1, main.b2, main.b3, main.b4, main.b5, main.b6, main.b7, main.b8):
-            if element.check_mark:
-                element.check_mark = None
-                element.repaint()
+        checked = self.parent().parent().currently_checked_menu_button
+        if checked is not None:
+            checked.check_mark = None
+            self.close_animation = QPropertyAnimation(checked.count_label, b"geometry")
+            self.close_animation.setDuration(150)
+            self.close_animation.setStartValue(QRect(checked.count_label.x(), checked.count_label.y(), 30, 45))
+            self.close_animation.setEndValue(QRect(200, 0, 30, 45))
+            self.close_animation.start()
         sql = "SELECT COUNT(id) " \
               "FROM passwords " \
               "WHERE parent=?"
         query = main.cursor.execute(sql, (self.title,))
         self.check_mark = f"{query.fetchone()[0]}"
         main.get_childs(self.title)
+
+        # Count label animation
+        self.count_label.setText(self.check_mark)
+        self.move_animation = QPropertyAnimation(self.count_label, b"geometry")
+        self.move_animation.setDuration(150)
+        self.move_animation.setStartValue(QRect(self.count_label.x(), self.count_label.y(), self.count_label.width(), self.count_label.height()))
+        self.move_animation.setEndValue(QRect(170, 0, 30, 45))
+        self.move_animation.start()
 
     def eventFilter(
             self,
