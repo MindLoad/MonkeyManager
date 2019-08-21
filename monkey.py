@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 21.08.2019
+# Changed: 22.08.2019
 
 import sys
 import os
@@ -13,11 +13,11 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QToolButton, QHBo
                              QTableWidget, QTableWidgetItem, QAbstractItemView, QRadioButton, QPushButton,
                              QFrame, QComboBox, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QRect, QTimer, QEvent
-from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QFont, QResizeEvent, QMouseEvent, QTransform, QImage
+from PyQt5.QtGui import QIcon, QPainter, QColor, QPixmap, QResizeEvent, QMouseEvent
 
 from tools import encrypt
 from styles import qwidget_css, qframe_css, qlabel_css
-from services import SearchService, FontService
+from services import SearchService, FontService, AnimationService
 
 
 class Root(QWidget):
@@ -77,7 +77,7 @@ class Root(QWidget):
         self.search_field = QLineEdit()
         self.search_field.setMinimumHeight(46)
         self.search_field.setMaxLength(50)
-        self.search_field.setPlaceholderText("Search: fields[title, name, email, url] reg_search[any letter = %]")
+        self.search_field.setPlaceholderText("Search: [title, name, email, url]")
         self.search_field.returnPressed.connect(self.go_search)
         self.search_field.setStyleSheet(qwidget_css.search_field_style)
         self.table = QTableWidget()
@@ -390,8 +390,25 @@ class MenuButton(QPushButton):
         self.count_label.setStyleSheet(qlabel_css.menu_button_count_style)
         self.count_label.setGeometry(200, 0, 30, 45)
         self.installEventFilter(self)
+        # Animation
+        self.show_animation = AnimationService(self.count_label, b"geometry", 150,
+                                               QRect(
+                                                   self.count_label.x(),
+                                                   self.count_label.y(),
+                                                   self.count_label.width(),
+                                                   self.count_label.height()
+                                               ),
+                                               QRect(
+                                                   self.count_label.x() - 30,
+                                                   self.count_label.y(),
+                                                   self.count_label.width(),
+                                                   self.count_label.height()
+                                               )
+                                               ).init_animation()
 
     def paintEvent(self, event):
+        """ Override built-in paintEvent """
+
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         if self.check_mark:
@@ -413,7 +430,7 @@ class MenuButton(QPushButton):
         elif self.title == "Emails":
             painter.drawPixmap(27, 16, QPixmap(":/email"))
         elif self.title == "Software":
-            painter.drawPixmap(27, 16, QPixmap(":/software"))
+            painter.drawPixmap(30, 16, QPixmap(":/software"))
         else:
             painter.drawPixmap(30, 16, QPixmap(":/forum"))
         painter.setPen(QColor("#9bb0bf")) if not self.enter and not self.check_mark else \
@@ -432,25 +449,30 @@ class MenuButton(QPushButton):
         checked = self.parent().parent().currently_checked_menu_button
         if checked is not None:
             checked.check_mark = None
-            self.close_animation = QPropertyAnimation(checked.count_label, b"geometry")
-            self.close_animation.setDuration(150)
-            self.close_animation.setStartValue(QRect(checked.count_label.x(), checked.count_label.y(), 30, 45))
-            self.close_animation.setEndValue(QRect(200, 0, 30, 45))
-            self.close_animation.start()
+            hide_animation = AnimationService(checked.count_label, b"geometry", 150,
+                                                   QRect(
+                                                       checked.count_label.x(),
+                                                       checked.count_label.y(),
+                                                       checked.count_label.width(),
+                                                       checked.count_label.height()
+                                                   ),
+                                                   QRect(
+                                                       checked.count_label.x() + 30,
+                                                       checked.count_label.y(),
+                                                       checked.count_label.width(),
+                                                       checked.count_label.height()
+                                                   )
+                                                   ).init_animation()
+            hide_animation.start()
+            checked.repaint()
         sql = "SELECT COUNT(id) " \
               "FROM passwords " \
               "WHERE parent=?"
         query = main.cursor.execute(sql, (self.title,))
         self.check_mark = f"{query.fetchone()[0]}"
         main.get_childs(self.title)
-
-        # Count label animation
         self.count_label.setText(self.check_mark)
-        self.move_animation = QPropertyAnimation(self.count_label, b"geometry")
-        self.move_animation.setDuration(150)
-        self.move_animation.setStartValue(QRect(self.count_label.x(), self.count_label.y(), self.count_label.width(), self.count_label.height()))
-        self.move_animation.setEndValue(QRect(170, 0, 30, 45))
-        self.move_animation.start()
+        self.show_animation.start()
 
     def eventFilter(
             self,
