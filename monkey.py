@@ -405,6 +405,11 @@ class MenuButton(QPushButton):
                                                    self.count_label.height()
                                                )
                                                ).init_animation()
+        self.hide_animation = None
+
+    @staticmethod
+    def _parent(obj):
+        return obj.parent().parent()
 
     def paintEvent(self, event):
         """ Override built-in paintEvent """
@@ -444,42 +449,46 @@ class MenuButton(QPushButton):
             self,
             event: QMouseEvent
     ) -> None:
-        """ Intercept mouse click event """
+        """ Override some mouse click events """
 
-        checked = self.parent().parent().currently_checked_menu_button
-        if checked is not None:
-            checked.check_mark = None
-            hide_animation = AnimationService(checked.count_label, b"geometry", 150,
+        parent = self._parent(self)
+        previous_active = parent.currently_checked_menu_button
+        if previous_active is not None:
+            previous_active.check_mark = None
+            self.hide_animation = AnimationService(previous_active.count_label, b"geometry", 200,
                                                    QRect(
-                                                       checked.count_label.x(),
-                                                       checked.count_label.y(),
-                                                       checked.count_label.width(),
-                                                       checked.count_label.height()
+                                                       previous_active.count_label.x(),
+                                                       previous_active.count_label.y(),
+                                                       previous_active.count_label.width(),
+                                                       previous_active.count_label.height()
                                                    ),
                                                    QRect(
-                                                       checked.count_label.x() + 30,
-                                                       checked.count_label.y(),
-                                                       checked.count_label.width(),
-                                                       checked.count_label.height()
+                                                       previous_active.count_label.x() + 30,
+                                                       previous_active.count_label.y(),
+                                                       previous_active.count_label.width(),
+                                                       previous_active.count_label.height()
                                                    )
                                                    ).init_animation()
-            hide_animation.start()
-            checked.repaint()
+            self.hide_animation.start()
+            previous_active.repaint()
         sql = "SELECT COUNT(id) " \
               "FROM passwords " \
               "WHERE parent=?"
-        query = main.cursor.execute(sql, (self.title,))
+        query = parent.cursor.execute(sql, (self.title,))
         self.check_mark = f"{query.fetchone()[0]}"
-        main.get_childs(self.title)
+        parent.get_childs(self.title)
         self.count_label.setText(self.check_mark)
         self.show_animation.start()
 
     def eventFilter(
             self,
-            source,
+            source: QPushButton,
             event: QEvent
     ) -> QPushButton:
-        """ Override logic on event """
+        """
+        Override event logic
+        FocusIn, FocusOut
+        """
 
         if event.type() == 10:
             self.enter = True
