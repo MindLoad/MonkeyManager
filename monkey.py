@@ -62,14 +62,14 @@ class Root(QWidget):
         bar_menu = QWidget()
         bar_menu.setObjectName("bar_menu")
         bar_menu.setFixedWidth(200)
-        self.b1 = MenuButton("Web Sites")
-        self.b2 = MenuButton("Credit Cards")
-        self.b3 = MenuButton("Secrets")
-        self.b4 = MenuButton("E-commerce")
-        self.b5 = MenuButton("Web Accounts")
-        self.b6 = MenuButton("Emails")
-        self.b7 = MenuButton("Forums")
-        self.b8 = MenuButton("Software")
+        self.b1 = MenuButton("Web Sites", ":/web", 30, 16)
+        self.b2 = MenuButton("Credit Cards", ":/credit", 26, 16)
+        self.b3 = MenuButton("Secrets", ":/secret", 26, 16)
+        self.b4 = MenuButton("E-commerce", ":/ecommerce", 27, 16)
+        self.b5 = MenuButton("Web Accounts", ":/webaccount", 30, 16)
+        self.b6 = MenuButton("Emails", ":/email", 27, 16)
+        self.b7 = MenuButton("Forums", ":/forum", 30, 16)
+        self.b8 = MenuButton("Software", ":/software", 30, 16)
         # Keys Elements
         # bar_key: QWidget which include second_layout_keys as basic layout. Second element of second_layout
         bar_key = QWidget()
@@ -372,15 +372,23 @@ class Root(QWidget):
 
 
 class MenuButton(QPushButton):
+    """ Menu button class """
+
     def __init__(
             self,
             title: str,
+            icon_alias: str,
+            position_x: int,
+            position_y: int,
             parent=None):
         super().__init__(parent)
         self.setFixedSize(200, 45)
         self.setCursor(Qt.PointingHandCursor)
         self.setObjectName("menu_button")
         self.title = title
+        self.icon_alias = icon_alias
+        self.position_x = position_x
+        self.position_y = position_y
         self.check_mark = None
         self.font = FontService("Verdana", 11, True).get_font()
         self.enter = False
@@ -422,22 +430,7 @@ class MenuButton(QPushButton):
             painter.setBrush(QColor("#00365c"))
         painter.setPen(Qt.NoPen)
         painter.drawRect(0, 0, self.width(), 45)
-        if self.title == "Web Sites":
-            painter.drawPixmap(30, 16, QPixmap(":/web"))
-        elif self.title == "Credit Cards":
-            painter.drawPixmap(26, 16, QPixmap(":/credit"))
-        elif self.title == "Secrets":
-            painter.drawPixmap(26, 16, QPixmap(":/secret"))
-        elif self.title == "E-commerce":
-            painter.drawPixmap(27, 16, QPixmap(":/ecommerce"))
-        elif self.title == "Web Accounts":
-            painter.drawPixmap(30, 16, QPixmap(":/webaccount"))
-        elif self.title == "Emails":
-            painter.drawPixmap(27, 16, QPixmap(":/email"))
-        elif self.title == "Software":
-            painter.drawPixmap(30, 16, QPixmap(":/software"))
-        else:
-            painter.drawPixmap(30, 16, QPixmap(":/forum"))
+        painter.drawPixmap(self.position_x, self.position_y, QPixmap(self.icon_alias))
         painter.setPen(QColor("#9bb0bf")) if not self.enter and not self.check_mark else \
             painter.setPen(QColor("#cadfee"))
         painter.drawText(70, 15, 140, 14, Qt.AlignLeft, self.title)
@@ -453,6 +446,8 @@ class MenuButton(QPushButton):
 
         parent = self._parent(self)
         previous_active = parent.currently_checked_menu_button
+        if self == previous_active:
+            return
         if previous_active is not None:
             previous_active.check_mark = None
             self.hide_animation = AnimationService(previous_active.count_label, b"geometry", 200,
@@ -490,11 +485,9 @@ class MenuButton(QPushButton):
         FocusIn, FocusOut
         """
 
-        if event.type() == 10:
-            self.enter = True
-            self.update()
-        elif event.type() == 11:
-            self.enter = False
+        states = {10: True, 11: False}
+        if event.type() in states:
+            self.enter = states[event.type()]
             self.update()
         return QPushButton.eventFilter(self, source, event)
 
@@ -568,10 +561,10 @@ class AddNewKey(QFrame):
         save_button.setCursor(Qt.PointingHandCursor)
         save_button.clicked.connect(self._save)
         # Animation
-        self.animation = QPropertyAnimation(self, b"geometry")
-        self.animation.setDuration(200)
-        self.animation.setStartValue(QRect(0, -self.h, self.w, self.h))
-        self.animation.setEndValue(QRect(0, 0, self.w, self.h))
+        self.animation = AnimationService(self, b"geometry", 200,
+                                          QRect(0, -self.h, self.w, self.h),
+                                          QRect(0, 0, self.w, self.h)
+                                          ).init_animation()
         self.animation.start()
         # Timer
         self.timer = QTimer(self)
