@@ -1,0 +1,3 @@
+"""
+Main project init
+"""
