@@ -80,6 +80,7 @@ class Root(QWidget):
         self.search_field.setPlaceholderText("Search: [title, name, email, url]")
         self.search_field.returnPressed.connect(self.go_search)
         self.search_field.setStyleSheet(qwidget_css.search_field_style)
+        self.search_field.installEventFilter(self)
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setColumnWidth(0, 160)
@@ -166,6 +167,7 @@ class Root(QWidget):
         main_layout.addLayout(second_layout)
         self.setLayout(main_layout)
         self.pass_input.setFocus(True)
+        self.pass_input.installEventFilter(self)
         # QTimer
         self.bg_timeout = QTimer(self)
         self.bg_timeout.setInterval(3000)
@@ -220,6 +222,12 @@ class Root(QWidget):
                         self.table.item(row, 3).statusTip(), self.table.item(row, 4).text(),
                         self.table.item(row, 5).text(), self.table.item(row, 6).text(), self.table.item(row, 7).text())
                 self.add_form(data)
+            elif event.key() == Qt.Key_Tab and self.pass_input.hasFocus():
+                self.search_field.setFocus(True)
+                return True
+            elif event.key() == Qt.Key_Tab and self.search_field.hasFocus():
+                self.pass_input.setFocus(True)
+                return True
         return QWidget.eventFilter(self, source, event)
 
     def resizeEvent(self, a0: QResizeEvent):
