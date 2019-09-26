@@ -53,6 +53,7 @@ class UiRootWindow:
         self.pass_input.setFixedHeight(50)
         self.pass_input.setPlaceholderText("secret key")
         self.pass_input.setEchoMode(QLineEdit.Password)
+        self.pass_input.installEventFilter(self)
         # Second Elements menu
         # bar_menu: QWidget which include second_layout_menu as basic layout. First element of second_layout
         bar_menu = QWidget()
@@ -74,6 +75,7 @@ class UiRootWindow:
         self.search_field.setMinimumHeight(46)
         self.search_field.setMaxLength(50)
         self.search_field.setPlaceholderText("Search: [title, name, email, url]")
+        self.search_field.installEventFilter(self)
         # self.search_field.returnPressed.connect(self.go_search)
         self.search_field.setStyleSheet(qwidget_css.search_field_style)
         self.table = QTableWidget()
