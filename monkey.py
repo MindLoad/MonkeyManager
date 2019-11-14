@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, QSize, QTimer, QEvent
 from PyQt5.QtGui import QIcon, QResizeEvent
 
 from tools import run_decode
-from services import SearchService
+from services import SearchService, DumpService
 from widgets import AddNewKey
 
 
@@ -35,6 +35,9 @@ class Root(QWidget, ui.UiRootWindow):
         self.search_field.returnPressed.connect(self.go_search)
 
         self.table.cellDoubleClicked.connect(self.click_item)
+
+        self.export_dump.clicked.connect(self.run_export_dump)
+        self.import_dump.clicked.connect(self.run_import_dump)
 
         # QTimer
         self.bg_timeout = QTimer(self)
@@ -64,7 +67,7 @@ class Root(QWidget, ui.UiRootWindow):
         c = sqlite3.connect(os.path.dirname(os.path.realpath(__file__)) + "/crypt.db")
         return c, c.cursor()
 
-    def build_extra_elements(self):
+    def build_extra_elements(self) -> None:
         """
         Build extra UI elements
         """
@@ -73,13 +76,35 @@ class Root(QWidget, ui.UiRootWindow):
         self.search_result.setObjectName("search_result")
         self.second_layout_keys_childs.addWidget(self.search_result)
 
-    def init_extra_services(self):
+    def init_extra_services(self) -> None:
         """
         Initialize additional extra services
         get_connection should start before
         """
 
         self.search_service = SearchService(self.cursor)
+
+    def run_export_dump(self) -> None:
+        """
+        Export main db as dump with SQL statements
+        :return: None
+        """
+
+        DumpService(
+            connection=self.connection,
+            cursor=self.cursor
+        ).write_to_file()
+
+    def run_import_dump(self) -> None:
+        """
+        Import dump with SQL statements into main db
+        :return: None
+        """
+
+        DumpService(
+            connection=self.connection,
+            cursor=self.cursor
+        ).read_from_file()
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:

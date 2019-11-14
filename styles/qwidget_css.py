@@ -34,3 +34,7 @@ search_field_style = """
     border-radius:23px; background:#fff; border:1px solid #c6c6c6; padding:0 30px;font:13px Arial;color:#636363;
     background-image: url(:/search); background-repeat: no-repeat; background-position: left;
 """
+
+menu_extra_buttons = """
+    QToolButton {border:none;}
+"""
