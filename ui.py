@@ -74,7 +74,7 @@ class UiRootWindow:
         :return: QGraphicsDropShadowEffect
         """
 
-        # Effects
+        # ------------------------------ EFFECTS ------------------------------------------
         effect = QGraphicsDropShadowEffect(root_window)
         effect.setXOffset(0)
         effect.setYOffset(0)
@@ -108,12 +108,12 @@ class UiRootWindow:
         self.export_dump.setMinimumSize(14, 14)
         self.export_dump.setIcon(QIcon("images/export.svg"))
         self.export_dump.setCursor(Qt.PointingHandCursor)
-        self.export_dump.setToolTip("Export database dump")
+        self.export_dump.setToolTip("Export db to sql")
         self.export_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
         self.import_dump.setMinimumSize(14, 14)
         self.import_dump.setIcon(QIcon("images/import.svg"))
         self.import_dump.setCursor(Qt.PointingHandCursor)
-        self.import_dump.setToolTip("Import database dump")
+        self.import_dump.setToolTip("Import db from sql")
         self.import_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
         # ------------------------------ TABLE PANEL ELEMENTS -----------------------------
         # SEARCH field
@@ -186,9 +186,10 @@ class UiRootWindow:
         self.bar_top.setLayout(self.first_layout)
 
         self.second_layout_menu_bottom_extra.setContentsMargins(7, 0, 7, 7)
-        self.second_layout_menu_bottom_extra.addWidget(self.export_dump)
-        # self.second_layout_menu_bottom_extra.addSpacing(10)
-        self.second_layout_menu_bottom_extra.addWidget(self.import_dump)
+        self.second_layout_menu_bottom_extra.addWidget(self.export_dump, alignment=Qt.AlignLeft)
+        self.second_layout_menu_bottom_extra.addSpacing(5)
+        self.second_layout_menu_bottom_extra.addWidget(self.import_dump, alignment=Qt.AlignLeft)
+        self.second_layout_menu_bottom_extra.addStretch(1)
 
         self.second_layout_menu.setContentsMargins(0, 0, 0, 0)
         self.second_layout_menu.setSpacing(0)

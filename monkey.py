@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Created: 13.09.2017
-# Changed: 28.08.2019
+# Changed: 17.11.2019
 
 import sys
 import os
@@ -101,10 +101,13 @@ class Root(QWidget, ui.UiRootWindow):
         :return: None
         """
 
-        DumpService(
+        dump_service = DumpService(
             connection=self.connection,
             cursor=self.cursor
-        ).read_from_file()
+        )
+        file_name = dump_service.open_dump_file_dialog(self)
+        if file_name:
+            dump_service.read_from_file(file_name)
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:
