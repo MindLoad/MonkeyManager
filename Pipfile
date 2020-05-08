@@ -8,11 +8,13 @@ pylint = "~=2.3"
 pycodestyle = "~=2.5"
 safety = "~=1.8"
 bandit = "~=1.6"
-ipython = "~=7.9.0"
+ipython = "~=7.14"
+jupyterlab = ">=2.1"
+jupyterlab-git = ">=0.20"
 
 [packages]
-pycryptodome = "~=3.8.2"
-PyQt5 = "~=5.13"
+pycryptodome = ">=3.9"
+PyQt5 = ">=5.14"
 
 [requires]
 python_version = "3.7"
