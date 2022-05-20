@@ -4,17 +4,19 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "~=2.3"
-pycodestyle = "~=2.5"
-safety = "~=1.8"
-bandit = "~=1.6"
-ipython = "~=7.14"
-jupyterlab = ">=2.1"
-jupyterlab-git = ">=0.20"
+pylint = "*"
+pycodestyle = "*"
+safety = "*"
+bandit = "*"
+ipython = "*"
+PyQt5-stubs = "*"
 
 [packages]
-pycryptodome = ">=3.9"
-PyQt5 = ">=5.14"
+pycryptodome = "*"
+PyQt5 = "*"
+sheet2dict = "*"
+attrs = "*"
+chime = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.10"

@@ -1,5 +1,3 @@
-"""
-Project Widget UI
-"""
+""" Project Widget UI """
 
 from .menu_button import *

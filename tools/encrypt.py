@@ -1,12 +1,4 @@
-# -*- coding: utf-8 -*-
-# Created: 06.09.2017
-# Changed: 28.08.2019
-
-"""
-Module for encryption / decryption
-"""
-
-__author__ = 'MindLoad'
+""" Module for encryption / decryption """
 
 __all__ = [
     'run_encode',

@@ -1,15 +1,9 @@
-"""
-Animation service logic
-"""
+""" Animation service logic """
 
-__all__ = [
-    'AnimationService',
-]
+__all__ = ['AnimationService']
 
 import typing
-
 from dataclasses import dataclass
-
 from PyQt5.QtCore import QRect, QPropertyAnimation
 
 

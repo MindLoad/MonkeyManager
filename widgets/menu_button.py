@@ -1,21 +1,13 @@
-# -*- coding: utf-8 -*-
+""" Left menu button widget """
+
 # Created: 27.08.2019
 # Changed: 28.08.2019
 
-"""
-Left menu button widget
-"""
-
-__author__ = 'MindLoad'
-
-__all__ = [
-    'MenuButton',
-]
+__all__ = ['MenuButton']
 
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtCore import Qt, QRect, QEvent
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QMouseEvent
-
 from services import AnimationService
 from .ui import UiMenuButton
 

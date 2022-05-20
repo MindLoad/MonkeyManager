@@ -1,24 +1,17 @@
-# -*- coding: utf-8 -*-
+""" QFrame add new key """
+
 # Created: 28.08.2019
-# Changed: 28.08.2019
+# Changed: 13.04.2022
 
-"""
-QFrame add new key
-"""
-
-__all__ = [
-    'AddNewKey',
-]
+__all__ = ['AddNewKey']
 
 import sqlite3
 import typing
-
 from datetime import datetime
-
 from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QRadioButton, QPushButton, QComboBox
 from PyQt5.QtCore import Qt, QSize, QRect, QTimer, QEvent
 from PyQt5.QtGui import QIcon
-
+import chime
 from styles import qframe_css
 from services import AnimationService
 from tools import run_encode
@@ -202,6 +195,7 @@ class AddNewKey(QFrame):
             )
         self.connection.commit()
         self._close()
+        chime.success()
 
     def _close(self):
         self.animation.setStartValue(QRect(0, 0, self.w, self.h))

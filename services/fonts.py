@@ -1,13 +1,8 @@
-"""
-Font service logic
-"""
+""" Font service logic """
 
-__all__ = [
-    'FontService',
-]
+__all__ = ['FontService']
 
 from dataclasses import dataclass
-
 from PyQt5.QtGui import QFont
 
 

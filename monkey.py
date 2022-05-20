@@ -1,31 +1,25 @@
-# -*- coding: utf-8 -*-
-# Created: 13.09.2017
-# Changed: 17.11.2019
+""" Monkey manager is simple password keeper application """
 
 import sys
-import os
-import sqlite3
 import source
 import ui
-
+import chime
 from PyQt5.QtWidgets import QApplication, QWidget, QToolButton, QLabel, QTableWidgetItem, QRadioButton
 from PyQt5.QtCore import Qt, QSize, QTimer, QEvent
 from PyQt5.QtGui import QIcon, QResizeEvent
-
+import services
 from tools import run_decode
-from services import SearchService, DumpService
 from widgets import AddNewKey
 
 
 class Root(QWidget, ui.UiRootWindow):
-    """
-    Root application widget
-    """
+    """ Root application widget """
 
     def __init__(self):
         super().__init__(flags=Qt.WindowTitleHint)
         # Establish connection to db
-        self.connection, self.cursor = self.get_connection()
+        self.connection = services.ConnectionService().connection
+        self.cursor = self.connection.cursor()
         # Setup main window UI
         self.setup_ui(self)
         # Static variables
@@ -47,6 +41,7 @@ class Root(QWidget, ui.UiRootWindow):
         self.build_extra_elements()
         # Init extra services
         self.init_extra_services()
+        chime.notify_exceptions()
 
     @property
     def currently_checked_menu_button(self):
@@ -56,16 +51,6 @@ class Root(QWidget, ui.UiRootWindow):
             if button.check_mark is not None:
                 return button
         return None
-
-    @staticmethod
-    def get_connection() -> [sqlite3.Connection, sqlite3.Cursor]:
-        """
-        Connect to Sqlite source
-        :return: sqlite connection, cursor
-        """
-
-        c = sqlite3.connect(os.path.dirname(os.path.realpath(__file__)) + "/crypt.db")
-        return c, c.cursor()
 
     def build_extra_elements(self) -> None:
         """
@@ -82,7 +67,7 @@ class Root(QWidget, ui.UiRootWindow):
         get_connection should start before
         """
 
-        self.search_service = SearchService(self.cursor)
+        self.search_service = services.SearchService(self.cursor)
 
     def run_export_dump(self) -> None:
         """
@@ -90,18 +75,15 @@ class Root(QWidget, ui.UiRootWindow):
         :return: None
         """
 
-        DumpService(
+        services.DumpService(
             connection=self.connection,
             cursor=self.cursor
         ).write_to_file()
 
     def run_import_dump(self) -> None:
-        """
-        Import dump with SQL statements into main db
-        :return: None
-        """
+        """ Import dump with SQL statements into main db """
 
-        dump_service = DumpService(
+        dump_service = services.DumpService(
             connection=self.connection,
             cursor=self.cursor
         )
@@ -111,29 +93,31 @@ class Root(QWidget, ui.UiRootWindow):
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress:
-            if event.key() == Qt.Key_Delete and self.table.currentRow() >= 0:
-                row = self.table.currentRow()
-                row_id = self.table.item(row, 3).statusTip()
-                sql = "DELETE FROM passwords " \
-                      "WHERE id=?"
-                self.cursor.execute(sql, (row_id,))
-                self.connection.commit()
-                self.table.removeRow(row)
-            elif event.key() == Qt.Key_F4 and self.table.currentRow() >= 0:
-                if not self.pass_input.text().strip():
-                    self.secret_key_filter()
-                    return QWidget.eventFilter(self, source, event)
-                row = self.table.currentRow()
-                data = (self.table.item(row, 0).text(), self.table.item(row, 1).text(), self.table.item(row, 2).text(),
-                        self.table.item(row, 3).statusTip(), self.table.item(row, 4).text(),
-                        self.table.item(row, 5).text(), self.table.item(row, 6).text(), self.table.item(row, 7).text())
-                self.add_form(data)
-            elif event.key() == Qt.Key_Tab and self.pass_input.hasFocus():
-                self.search_field.setFocus(True)
-                return True
-            elif event.key() == Qt.Key_Tab and self.search_field.hasFocus():
-                self.pass_input.setFocus(True)
-                return True
+            match event.key():
+                case Qt.Key_Delete if self.table.currentRow() >= 0:
+                    row = self.table.currentRow()
+                    row_id = self.table.item(row, 3).statusTip()
+                    sql = "DELETE FROM passwords " \
+                          "WHERE id=?"
+                    self.cursor.execute(sql, (row_id,))
+                    self.connection.commit()
+                    self.table.removeRow(row)
+                case Qt.Key_F4 if self.table.currentRow() >= 0:
+                    if not self.pass_input.text().strip():
+                        self.secret_key_filter()
+                        chime.error()
+                        return QWidget.eventFilter(self, source, event)
+                    row = self.table.currentRow()
+                    data = (self.table.item(row, 0).text(), self.table.item(row, 1).text(), self.table.item(row, 2).text(),
+                            self.table.item(row, 3).statusTip(), self.table.item(row, 4).text(),
+                            self.table.item(row, 5).text(), self.table.item(row, 6).text(), self.table.item(row, 7).text())
+                    self.add_form(data)
+                case Qt.Key_Tab if self.pass_input.hasFocus():
+                    self.search_field.setFocus(True)
+                    return True
+                case Qt.Key_Tab if self.search_field.hasFocus():
+                    self.pass_input.setFocus(True)
+                    return True
         return QWidget.eventFilter(self, source, event)
 
     def resizeEvent(self, a0: QResizeEvent):
@@ -152,6 +136,7 @@ class Root(QWidget, ui.UiRootWindow):
     def add_form(self, arg):
         if not self.pass_input.text().strip():
             self.secret_key_filter()
+            chime.error()
             return
         self._add = AddNewKey(self.connection, self.cursor, self.pass_input.text(), arg, parent=main)
         self._add.show()
@@ -257,6 +242,7 @@ class Root(QWidget, ui.UiRootWindow):
         if column == 3:
             if len(self.pass_input.text().strip()) == 0:
                 self.secret_key_filter()
+                chime.error()
                 return
             self.table.blockSignals(True)
             sql = "SELECT password " \
@@ -270,23 +256,29 @@ class Root(QWidget, ui.UiRootWindow):
                     decode_res = result.decode("utf-8")
                 except UnicodeDecodeError:
                     decode_res = "error key"
+                    chime.error()
                 finally:
                     self.table.item(row, 3).setText(decode_res)
             else:
                 print("No Password in DB!")
+                chime.error()
             self.table.blockSignals(False)
 
     def go_search(self):
         """ Search for relevant key in db """
 
-        results = self.search_service.search(phrase=self.search_field.text())
-        if results is not None:
-            self.build_table_rows(results)
+        phrase = self.search_field.text()
+        if not phrase.strip():
+            chime.warning()
+            return
+        results = self.search_service.search(phrase=phrase)
+        chime.success()
+        self.build_table_rows(results)
 
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "2.0.0"
+    __version__ = "2.0.1"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()

@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
+""" Main window UI class """
+
 # Created: 27.08.2019
 # Changed: 15.11.2019
-
-"""
-Main window UI class
-"""
 
 
 from PyQt5.QtWidgets import (QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel, QTableWidget,
@@ -15,13 +12,11 @@ from PyQt5.QtGui import QColor, QPixmap, QIcon
 from widgets import MenuButton
 from styles import qwidget_css
 
-__all__ = [
-    'UiRootWindow',
-]
+__all__ = ['UiRootWindow']
 
 
 class UiRootWindow:
-    """ Root window ui class """
+    """ Root window UI class """
 
     def __init__(self):
         # ELEMENTS
@@ -108,12 +103,12 @@ class UiRootWindow:
         self.export_dump.setMinimumSize(14, 14)
         self.export_dump.setIcon(QIcon("images/export.svg"))
         self.export_dump.setCursor(Qt.PointingHandCursor)
-        self.export_dump.setToolTip("Export db to sql")
+        self.export_dump.setToolTip("Export db to csv")
         self.export_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
         self.import_dump.setMinimumSize(14, 14)
         self.import_dump.setIcon(QIcon("images/import.svg"))
         self.import_dump.setCursor(Qt.PointingHandCursor)
-        self.import_dump.setToolTip("Import db from sql")
+        self.import_dump.setToolTip("Import db from csv")
         self.import_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
         # ------------------------------ TABLE PANEL ELEMENTS -----------------------------
         # SEARCH field
@@ -185,9 +180,9 @@ class UiRootWindow:
         self.first_layout.addWidget(self.pass_input, alignment=Qt.AlignCenter)
         self.bar_top.setLayout(self.first_layout)
 
-        self.second_layout_menu_bottom_extra.setContentsMargins(7, 0, 7, 7)
+        self.second_layout_menu_bottom_extra.setContentsMargins(10, 0, 10, 10)
         self.second_layout_menu_bottom_extra.addWidget(self.export_dump, alignment=Qt.AlignLeft)
-        self.second_layout_menu_bottom_extra.addSpacing(5)
+        self.second_layout_menu_bottom_extra.addSpacing(7)
         self.second_layout_menu_bottom_extra.addWidget(self.import_dump, alignment=Qt.AlignLeft)
         self.second_layout_menu_bottom_extra.addStretch(1)
 
