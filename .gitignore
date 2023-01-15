@@ -100,4 +100,6 @@ ENV/
 # mypy
 .mypy_cache/
 .idea
-crypt.db
+crypt*
+*.sql
+*.db
