@@ -1,6 +1,4 @@
-"""
-Styles for QFrame elements
-"""
+""" Styles for QFrame elements """
 
 add_new_key_style = """
     QFrame#AddFrame {background:#eaeaea;}

@@ -1,6 +1,4 @@
-"""
-Styles for Qwidget elements
-"""
+"""Styles for QWidget elements """
 
 menu_button_count_style = """
     color: #fff;

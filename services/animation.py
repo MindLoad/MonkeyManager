@@ -9,9 +9,7 @@ from PyQt5.QtCore import QRect, QPropertyAnimation
 
 @define
 class AnimationService:
-    """
-    Animation service dataclass
-    """
+    """ Animation service dataclass """
 
     element: typing.Any
     property_name: typing.ByteString

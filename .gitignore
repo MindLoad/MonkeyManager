@@ -103,3 +103,4 @@ ENV/
 crypt*
 *.sql
 *.db
+export.json

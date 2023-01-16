@@ -1,16 +1,16 @@
 """ Main window UI class """
 
 # Created: 27.08.2019
-# Changed: 15.11.2019
+# Changed: 16.01.2023
 
 
 from PyQt5.QtWidgets import (QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel, QTableWidget,
-                             QTableWidgetItem, QAbstractItemView, QGraphicsDropShadowEffect)
-from PyQt5.QtCore import Qt
+                             QTableWidgetItem, QAbstractItemView, QGraphicsDropShadowEffect, QCompleter)
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QColor, QPixmap, QIcon
-
 from widgets import MenuButton
 from styles import qwidget_css
+from models import QueryBuilder
 
 __all__ = ['UiRootWindow']
 
@@ -37,6 +37,7 @@ class UiRootWindow:
         self.import_dump = QToolButton()
         # ------------------------------ TABLE PANEL ELEMENTS -----------------------------
         self.search_field = QLineEdit()
+        self.completer = QCompleter(QueryBuilder.completer_values())
         # WIDGETS
         # ------------------------------ TOP WIDGETS --------------------------------------
         self.bar_top = QWidget()
@@ -100,23 +101,23 @@ class UiRootWindow:
         self.pass_input.setEchoMode(QLineEdit.Password)
         self.pass_input.installEventFilter(self)
         # ------------------------------ MENU PANEL ELEMENTS ------------------------------
-        self.export_dump.setMinimumSize(14, 14)
-        self.export_dump.setIcon(QIcon("images/export.svg"))
+        self.export_dump.setMinimumSize(42, 14)
+        self.export_dump.setIcon(QIcon("images/json.png"))
+        self.export_dump.setIconSize(QSize(44, 14))
         self.export_dump.setCursor(Qt.PointingHandCursor)
-        self.export_dump.setToolTip("Export db to csv")
+        self.export_dump.setToolTip("Export CSV")
         self.export_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
-        self.import_dump.setMinimumSize(14, 14)
-        self.import_dump.setIcon(QIcon("images/import.svg"))
-        self.import_dump.setCursor(Qt.PointingHandCursor)
-        self.import_dump.setToolTip("Import db from csv")
-        self.import_dump.setStyleSheet(qwidget_css.menu_extra_buttons)
         # ------------------------------ TABLE PANEL ELEMENTS -----------------------------
         # SEARCH field
         self.search_field.setMinimumHeight(46)
         self.search_field.setMaxLength(50)
-        self.search_field.setPlaceholderText("Search: [title, name, email, url]")
+        self.search_field.setPlaceholderText("Search ~ Title, Name")
         self.search_field.installEventFilter(self)
         self.search_field.setStyleSheet(qwidget_css.search_field_style)
+        self.completer.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.completer.setFilterMode(Qt.MatchContains)
+        self.search_field.setCompleter(self.completer)
 
     def init_widgets(self) -> None:
         """
@@ -182,9 +183,6 @@ class UiRootWindow:
 
         self.second_layout_menu_bottom_extra.setContentsMargins(10, 0, 10, 10)
         self.second_layout_menu_bottom_extra.addWidget(self.export_dump, alignment=Qt.AlignLeft)
-        self.second_layout_menu_bottom_extra.addSpacing(7)
-        self.second_layout_menu_bottom_extra.addWidget(self.import_dump, alignment=Qt.AlignLeft)
-        self.second_layout_menu_bottom_extra.addStretch(1)
 
         self.second_layout_menu.setContentsMargins(0, 0, 0, 0)
         self.second_layout_menu.setSpacing(0)

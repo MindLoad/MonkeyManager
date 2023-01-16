@@ -1,20 +1,17 @@
 """ QFrame add new key """
 
-# Created: 28.08.2019
-# Changed: 13.04.2022
-
 __all__ = ['AddNewKey']
 
-import sqlite3
 import typing
 from datetime import datetime
-from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QRadioButton, QPushButton, QComboBox
+from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QRadioButton, QPushButton, QComboBox, QWidget
 from PyQt5.QtCore import Qt, QSize, QRect, QTimer, QEvent
 from PyQt5.QtGui import QIcon
 import chime
 from styles import qframe_css
 from services import AnimationService
 from tools import run_encode
+from models import QueryBuilder
 
 
 class AddNewKey(QFrame):
@@ -22,17 +19,13 @@ class AddNewKey(QFrame):
 
     def __init__(
             self,
-            connection: sqlite3.Connection,
-            cursor: sqlite3.Cursor,
             secret_key: str,
             data: typing.Union[typing.List, None],
-            parent: object
+            parent: QWidget
     ):
         super().__init__(parent)
         self.parent = parent
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.connection = connection
-        self.cursor = cursor
         self.secret_key = secret_key
         self.data = data
         self.w = self.parent.width()
@@ -153,15 +146,11 @@ class AddNewKey(QFrame):
             curr_item = self.cc.takeAt(pos).widget()
             if curr_item is not None:
                 curr_item.deleteLater()
-        sql = "SELECT DISTINCT child " \
-              "FROM passwords " \
-              "WHERE parent=? " \
-              "ORDER BY child ASC"
-        query = self.cursor.execute(sql, (self.combo.currentText(),))
-        for item in query.fetchall():
+        query = QueryBuilder.retrieve_parents(root_parent=self.combo.currentText())
+        for item in query:
             r_elem = QRadioButton()
             r_elem.setObjectName("child-element")
-            r_elem.setText(item[0])
+            r_elem.setText(item.child)
             r_elem.setFixedHeight(20)
             r_elem.setCursor(Qt.PointingHandCursor)
             r_elem.clicked.connect(self.child_text_replace)
@@ -174,26 +163,22 @@ class AddNewKey(QFrame):
     def _save(self):
         crypt_password = run_encode(self.secret_key, self.password.text().encode("utf-8"))
         if not self.data:
-            sql = "INSERT INTO passwords " \
-                  "(parent, child, title, login, email, password, url, phone, created, modified) " \
-                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            self.cursor.execute(sql,
-                                (
-                                    self.combo.currentText(), self.child.text(), self.title.text(), self.name.text(),
-                                    self.email.text(), crypt_password, self.url.text(), self.phone.text(),
-                                    self.created.text(), self.modified.text()
-                                ))
-        else:
-            sql = "UPDATE passwords " \
-                  "SET title=?, login=?, email=?, password=?, url=?, phone=?, modified=? " \
-                  "WHERE id=?"
-            self.cursor.execute(
-                sql, (
-                    self.title.text(), self.name.text(), self.email.text(), crypt_password, self.url.text(),
-                    self.phone.text(), self.modified.text(), self.data[3]
-                )
+            QueryBuilder.create_item(
+                parent=self.combo.currentText(), child=self.child.text(), title=self.title.text(),
+                login=self.name.text(), email=self.email.text(), password=crypt_password, url=self.url.text(),
+                phone=self.phone.text(), created=self.created.text(), modified=self.modified.text()
             )
-        self.connection.commit()
+        else:
+            QueryBuilder.update_item(
+                item_id=self.data[3],
+                title=self.title.text(),
+                login=self.name.text(),
+                email=self.email.text(),
+                password=crypt_password,
+                url=self.url.text(),
+                phone=self.phone.text(),
+                modified=self.modified.text()
+            )
         self._close()
         chime.success()
 
@@ -213,6 +198,5 @@ class AddNewKey(QFrame):
             event: QEvent
     ) -> None:
         """ Track key press """
-
         if event.key() == Qt.Key_Escape:
             self._close()

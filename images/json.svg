@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="44"
+   height="12"
+   viewBox="0 0 11.641667 3.1750002"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="json.svg"
+   inkscape:version="1.0.2 (1.0.2+r75+1)"
+   inkscape:export-filename="/home/bro/Projects/PyQt/Monkey/images/json.png"
+   inkscape:export-xdpi="85"
+   inkscape:export-ydpi="85">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="16"
+     inkscape:cx="13.380505"
+     inkscape:cy="6.7142771"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:document-rotation="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(232.90367,-262.43668)">
+    <g
+       id="g892"
+       transform="matrix(2.0401965,0,0,2.0401965,235.5241,-270.68154)">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:1.63166px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#9bb0bf;fill-opacity:1;stroke:none;stroke-width:0.0407915"
+         x="-228.7242"
+         y="262.6824"
+         id="text834"><tspan
+           sodipodi:role="line"
+           id="tspan832"
+           x="-228.7242"
+           y="262.6824"
+           style="fill:#9bb0bf;fill-opacity:1;stroke-width:0.0407915"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#9bb0bf;fill-opacity:1;stroke-width:0.0407915"
+             id="tspan836">JSON</tspan></tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:1.63166px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#647987;fill-opacity:1;stroke:none;stroke-width:0.0407915"
+         x="-224.746"
+         y="262.57526"
+         id="text876"><tspan
+           sodipodi:role="line"
+           id="tspan874"
+           x="-224.746"
+           y="262.57526"
+           style="fill:#647987;fill-opacity:1;stroke-width:0.0407915">}</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:1.63166px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#647987;fill-opacity:1;stroke:none;stroke-width:0.0407915"
+         x="-229.78464"
+         y="262.56912"
+         id="text882"><tspan
+           sodipodi:role="line"
+           id="tspan880"
+           x="-229.78464"
+           y="262.56912"
+           style="fill:#647987;fill-opacity:1;stroke-width:0.0407915">{<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#647987;fill-opacity:1;stroke-width:0.0407915"
+   id="tspan878" /></tspan></text>
+    </g>
+  </g>
+</svg>

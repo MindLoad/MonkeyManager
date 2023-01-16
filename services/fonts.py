@@ -2,19 +2,17 @@
 
 __all__ = ['FontService']
 
-from dataclasses import dataclass
+from attrs import define, field
 from PyQt5.QtGui import QFont
 
 
-@dataclass
+@define
 class FontService:
-    """
-    Font service dataclass
-    """
+    """ Font service dataclass """
 
-    family: str
-    size: int
-    bold: bool
+    family: str = field(factory=str)
+    size: int = field(factory=int)
+    bold: bool = field(factory=bool)
 
     def get_font(self) -> QFont:
         """

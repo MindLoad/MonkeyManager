@@ -2,7 +2,7 @@
 
 __all__ = [
     'Passwords',
-    'session'
+    'Session'
 ]
 
 from sqlalchemy import create_engine
@@ -45,4 +45,4 @@ class Passwords(Base):
 
 
 # Session
-session = sessionmaker(bind=engine)()
+Session = sessionmaker(bind=engine)
