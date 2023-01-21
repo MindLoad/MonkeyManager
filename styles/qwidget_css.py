@@ -35,3 +35,9 @@ search_field_style = """
 menu_extra_buttons = """
     QToolButton {border:none;}
 """
+
+completer_pop_style = """
+    QListView {show-decoration-selected: 1; selection-background-color: #5aafee; selection-color: #ffffff;
+        background: #485761; color: #fff2d9;}
+    QAbstractItemView#completerPopup::item {border: 0; padding: 4px;}
+"""

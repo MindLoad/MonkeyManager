@@ -1,11 +1,13 @@
 """ Main window UI class """
 
 # Created: 27.08.2019
-# Changed: 16.01.2023
+# Changed: 22.01.2023
 
 
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel, QTableWidget,
-                             QTableWidgetItem, QAbstractItemView, QGraphicsDropShadowEffect, QCompleter)
+from PyQt5.QtWidgets import (
+    QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QCompleter,
+    QAbstractItemView, QGraphicsDropShadowEffect, QStyledItemDelegate
+)
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QColor, QPixmap, QIcon
 from widgets import MenuButton
@@ -38,6 +40,7 @@ class UiRootWindow:
         # ------------------------------ TABLE PANEL ELEMENTS -----------------------------
         self.search_field = QLineEdit()
         self.completer = QCompleter(QueryBuilder.completer_values())
+        self.completer_popup_delegate = QStyledItemDelegate()
         # WIDGETS
         # ------------------------------ TOP WIDGETS --------------------------------------
         self.bar_top = QWidget()
@@ -117,6 +120,9 @@ class UiRootWindow:
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.completer.setFilterMode(Qt.MatchContains)
+        self.completer.popup().setItemDelegate(self.completer_popup_delegate)
+        self.completer.popup().setObjectName("completerPopup")
+        self.completer.popup().setStyleSheet(qwidget_css.completer_pop_style)
         self.search_field.setCompleter(self.completer)
 
     def init_widgets(self) -> None:
