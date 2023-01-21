@@ -2,31 +2,41 @@
 
 __all__ = ['SearchService']
 
-import typing
-from dataclasses import dataclass
-from sqlite3 import Cursor
+from attrs import define
+from sqlalchemy.orm.query import Query
+from sqlalchemy import text
+from sqlalchemy import or_
+from models import Session, Passwords
 
 
-@dataclass
+@define(slots=True, frozen=True)
 class SearchService:
     """ Search service dataclass """
 
-    cursor: Cursor
-
-    def search(self, phrase: str) -> typing.Optional[Cursor]:
+    @classmethod
+    def search(cls, phrase: str) -> Query:
         """
         Search logic
-        :return: sql query (search results)
+        :return: search results
         """
-
         phrase = f"%{phrase}%"
+        sql = f"SELECT id, parent, child, title, login, email, url, phone, created, modified " \
+              f"FROM passwords " \
+              f"WHERE LOWER(title) LIKE LOWER(:phrase) OR LOWER(login) LIKE LOWER(:phrase) " \
+              f"OR LOWER(email) LIKE LOWER(:phrase) OR LOWER(url) LIKE LOWER(:phrase) " \
+              f"ORDER BY id ASC"
+        with Session() as session:
+            query = session.execute(text(sql), {'phrase': phrase})
+        return query.fetchall()
 
-        sql = "SELECT id, title, login, email, url, phone, created, modified " \
-              "FROM passwords " \
-              "WHERE LOWER(title) LIKE LOWER(:search_line) OR LOWER(login) LIKE LOWER(:search_line) " \
-              "OR LOWER(email) LIKE LOWER(:search_line) OR LOWER(url) LIKE LOWER(:search_line) " \
-              "ORDER BY id ASC"
-        query = self.cursor.execute(
-            sql, {"search_line": phrase}
-        )
-        return query
+    @classmethod
+    def completer_search(cls, phrase: str) -> Query:
+        """ Search with completer values """
+        with Session() as session:
+            query = session.query(Passwords).filter(
+                or_(
+                    Passwords.title == phrase,
+                    Passwords.login == phrase
+                )
+            )
+        return query.all()

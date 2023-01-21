@@ -1,6 +1,4 @@
-"""
-Styles for Qwidget elements
-"""
+""" Styles for QWidget elements """
 
 root_style = """
     QWidget#bar_top {background:#fff;border-bottom:1px solid #c6c6c6;}

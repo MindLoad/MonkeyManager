@@ -3,15 +3,13 @@
 __all__ = ['AnimationService']
 
 import typing
-from dataclasses import dataclass
+from attrs import define
 from PyQt5.QtCore import QRect, QPropertyAnimation
 
 
-@dataclass
+@define
 class AnimationService:
-    """
-    Animation service dataclass
-    """
+    """ Animation service dataclass """
 
     element: typing.Any
     property_name: typing.ByteString

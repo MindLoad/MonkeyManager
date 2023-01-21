@@ -5,7 +5,6 @@ __all__ = [
     'run_decode',
 ]
 
-import typing
 import base64
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -26,10 +25,9 @@ def run_encode(
 
 def run_decode(
         key: str,
-        cipher: typing.ByteString
-) -> object:
+        cipher: bytes
+) -> bytes:
     """ Decrypt key with secret phrase """
-
     a_k_e_y = sha256(key.encode('utf-8')).digest()
     cipher = cipher.split(b":::")
     obj = AES.new(a_k_e_y, AES.MODE_CFB, cipher[1])

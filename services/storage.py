@@ -1,70 +1,53 @@
-""" Database dump service """
+""" Database export service """
 
-__all__ = [
-    'ConnectionService',
-    'DumpService',
-]
+__all__ = ['ExportService']
 
-import typing
-import sqlite3
-from pathlib import Path
-import attr
-from PyQt5.QtWidgets import QFileDialog, QWidget
+import json
+import chime
+from attrs import define
+from models import Passwords, Session
+from tools import run_decode
 
 
-@attr.s(slots=True)
-class ConnectionService:
-    """ Connect to database """
+@define(slots=True)
+class ExportService:
+    """ Export service """
 
-    __connect = attr.ib(
-        validator=attr.validators.instance_of(sqlite3.Connection),
-        default=sqlite3.connect(Path(__file__).cwd() / 'crypt.db')
-    )
+    @classmethod
+    def decode_password_field(cls, key: str, password: bytes) -> str:
+        """ Decode password """
+        try:
+            return run_decode(key, password).decode("utf-8")
+        except UnicodeDecodeError:
+            # TODO: error logger
+            return 'Invalid'
 
-    @property
-    def connection(self) -> sqlite3.Connection:
-        """ Current connection instance """
-        return self.__connect
-
-
-@attr.s(slots=True)
-class DumpService:
-    """ Dump service """
-
-    connection = attr.ib(validator=attr.validators.instance_of(sqlite3.Connection))
-    cursor = attr.ib(validator=attr.validators.instance_of(sqlite3.Cursor))
-
-    def write_to_file(self) -> None:
+    @classmethod
+    def make_export(cls, key: str) -> None:
         """ Export sqlite3 database to file with SQL statements """
 
-        with open('dump.sql', 'w') as f:
-            for line in self.connection.iterdump():
-                f.write(f"{line}\n")
+        if not key.strip():
+            chime.error()
+            return
 
-    @staticmethod
-    def read_from_file(file_name: str) -> None:
-        """ Import dump with SQL statements to main database """
+        with Session() as session:
+            elements = json.dumps(
+                [{
+                    "id": each.id,
+                    "parent": each.parent,
+                    "child": each.child,
+                    "title": each.title,
+                    "login": each.login,
+                    "email": each.login,
+                    "password": cls.decode_password_field(key=key, password=each.password),
+                    "url": each.url,
+                    "created": each.created,
+                    "modified": each.modified
+                } for each in session.query(Passwords)],
+                indent=2
+            )
 
-        _file = open(file_name, 'r')
-        _sql = _file.read()
-        print(_sql)
-        # self.cursor.executescript(_sql)
+        with open('export.json', 'w') as outfile:
+            outfile.write(elements)
 
-    @staticmethod
-    def open_dump_file_dialog(
-            root_widget: QWidget
-    ) -> typing.Optional[str]:
-        """ Open file dialog for selecting dump """
-
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(
-            root_widget,
-            "Open sql dump file",
-            "",
-            "All files (*);;SQL Dump Files (*.sql)",
-            options=options
-        )
-        if file_name:
-            return file_name
-        return None
+        chime.success()

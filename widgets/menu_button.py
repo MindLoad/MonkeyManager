@@ -1,7 +1,7 @@
 """ Left menu button widget """
 
 # Created: 27.08.2019
-# Changed: 28.08.2019
+# Changed: 15.01.2023
 
 __all__ = ['MenuButton']
 
@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt, QRect, QEvent
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QMouseEvent
 from services import AnimationService
 from .ui import UiMenuButton
+from models import QueryBuilder
 
 
 class MenuButton(QPushButton, UiMenuButton):
@@ -85,12 +86,9 @@ class MenuButton(QPushButton, UiMenuButton):
             ).init_animation()
             self.hide_animation.start()
             previous_active.repaint()
-        sql = "SELECT COUNT(id) " \
-              "FROM passwords " \
-              "WHERE parent=?"
-        query = parent.cursor.execute(sql, (self.title,))
-        self.check_mark = f"{query.fetchone()[0]}"
-        parent.get_childs(self.title)
+        query = QueryBuilder.count_parents(title=self.title)
+        self.check_mark = f"{query}"
+        parent.get_children(self.title)
         self.count_label.setText(self.check_mark)
         self.show_animation.start()
 
