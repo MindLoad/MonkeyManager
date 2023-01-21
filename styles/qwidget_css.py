@@ -14,9 +14,8 @@ root_style = """
     QRadioButton#child-element::indicator {width:0;}
     QToolButton#refresh {border:none;}
     QTableWidget {border: 1px solid #c6c6c6; font:bold 11px Arial; color: #8e8e8e;}
-    QHeaderView::section {border-top: 0px solid #8a8a8a; border-left: 0px solid #8a8a8a;
-        border-right: 0px solid #d9d9d9; border-bottom: 1px solid #ccc; font: bold 12px Arial; background:#fff;
-        height:45px; color:#325d7c;padding-left:20px;}
+    QHeaderView::section {border-top: 0; border-left: 0; border-right: 0; border-bottom: 1px solid #ccc;
+        font: bold 12px Arial; background:#fff; height:45px; color:#325d7c; padding-left:20px;}
     QHeaderView::up-arrow {image: url(:/header-up);width:18px;height:18px;}
     QHeaderView::down-arrow {image: url(:/header-down);width:18px;height:18px;}
     QTableView::item {border-bottom: 1px solid #ccc;padding-left:20px;}
