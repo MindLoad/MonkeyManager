@@ -40,4 +40,6 @@ completer_pop_style = """
     QListView {show-decoration-selected: 1; selection-background-color: #5aafee; selection-color: #ffffff;
         background: #485761; color: #fff2d9;}
     QAbstractItemView#completerPopup::item {border: 0; padding: 4px;}
+    QListView QScrollBar:vertical {border: none; background: #485761; width:4px;}
+    QListView QScrollBar::handle:vertical {max-height: 0; background: #4797ce;}
 """
