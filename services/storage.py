@@ -5,8 +5,17 @@ __all__ = ['ExportService']
 import json
 import chime
 from attrs import define
+from pathlib import Path
+from loguru import logger
 from models import Passwords, Session
 from tools import run_decode
+
+logger.add(
+    Path(__file__).cwd() / 'logs/errors.log',
+    rotation="1 MB",
+    compression="zip",
+    format="<green>{time}</green> {level} <level>{message}</level>"
+)
 
 
 @define(slots=True)
@@ -19,7 +28,7 @@ class ExportService:
         try:
             return run_decode(key, password).decode("utf-8")
         except UnicodeDecodeError:
-            # TODO: error logger
+            logger.error(f'Error while decrypt password / key: {key}')
             return 'Invalid'
 
     @classmethod

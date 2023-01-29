@@ -14,10 +14,10 @@ PyQt5-stubs = "*"
 [packages]
 pycryptodome = "*"
 PyQt5 = "*"
-sheet2dict = "*"
 attrs = "*"
 chime = "*"
 sqlalchemy = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.11"
