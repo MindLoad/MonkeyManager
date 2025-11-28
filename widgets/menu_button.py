@@ -4,12 +4,50 @@ __all__ = ['MenuButton']
 
 from PyQt5.QtCore import QEvent, QRect, Qt
 from PyQt5.QtGui import QColor, QMouseEvent, QPainter, QPixmap
-from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QPushButton, QLabel
 
 from models import QueryBuilder
-from services import AnimationService
+from services import AnimationService, FontService
+from styles import qlabel_css
 
-from .ui import UiMenuButton
+
+class UiMenuButton:
+    """ Menu button ui class """
+
+    def __init__(self):
+        self.hide_animation = self.show_animation = self.check_mark = self.font = self.count_label = None
+        self.enter = False
+
+    def setup_ui(self, MenuButtonWidget: QPushButton) -> None:
+        """ setup left menu button ui """
+
+        MenuButtonWidget.setFixedSize(200, 45)
+        MenuButtonWidget.setCursor(Qt.PointingHandCursor)
+        MenuButtonWidget.setObjectName("menu_button")
+        self.font = FontService("Verdana", 11, True).get_font()
+        self.count_label = QLabel(self)
+        self.count_label.setFont(self.font)
+        self.count_label.setStyleSheet(qlabel_css.menu_button_count_style)
+        self.count_label.setGeometry(200, 0, 30, 45)
+        MenuButtonWidget.installEventFilter(self)
+        # Animation
+        self.show_animation = AnimationService(
+            self.count_label,
+            b"geometry",
+            150,
+            QRect(
+                self.count_label.x(),
+                self.count_label.y(),
+                self.count_label.width(),
+                self.count_label.height()
+                ),
+            QRect(
+                self.count_label.x() - 30,
+                self.count_label.y(),
+                self.count_label.width(),
+                self.count_label.height()
+                )
+        ).init_animation()
 
 
 class MenuButton(QPushButton, UiMenuButton):
