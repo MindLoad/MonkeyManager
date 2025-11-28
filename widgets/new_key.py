@@ -2,16 +2,17 @@
 
 __all__ = ['AddNewKey']
 
-import typing
 from datetime import datetime
-from PyQt5.QtWidgets import QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QRadioButton, QPushButton, QComboBox, QWidget
-from PyQt5.QtCore import Qt, QSize, QRect, QTimer, QEvent
-from PyQt5.QtGui import QIcon
+
 import chime
-from styles import qframe_css
-from services import AnimationService
-from tools import run_encode
+from PyQt5.QtCore import QEvent, QRect, QSize, Qt, QTimer
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QComboBox, QFrame, QHBoxLayout, QLineEdit, QPushButton, QRadioButton, QVBoxLayout, QWidget
+
 from models import QueryBuilder
+from services import AnimationService
+from styles import qframe_css
+from tools import run_encode
 
 
 class AddNewKey(QFrame):
@@ -20,7 +21,7 @@ class AddNewKey(QFrame):
     def __init__(
             self,
             secret_key: str,
-            data: typing.Union[typing.List, None],
+            data: list | None,
             parent: QWidget
     ):
         super().__init__(parent)

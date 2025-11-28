@@ -1,16 +1,15 @@
 """ Left menu button widget """
 
-# Created: 27.08.2019
-# Changed: 15.01.2023
-
 __all__ = ['MenuButton']
 
+from PyQt5.QtCore import QEvent, QRect, Qt
+from PyQt5.QtGui import QColor, QMouseEvent, QPainter, QPixmap
 from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtCore import Qt, QRect, QEvent
-from PyQt5.QtGui import QPainter, QColor, QPixmap, QMouseEvent
-from services import AnimationService
-from .ui import UiMenuButton
+
 from models import QueryBuilder
+from services import AnimationService
+
+from .ui import UiMenuButton
 
 
 class MenuButton(QPushButton, UiMenuButton):
@@ -38,7 +37,6 @@ class MenuButton(QPushButton, UiMenuButton):
 
     def paintEvent(self, event):
         """ Override built-in paintEvent """
-
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         if self.check_mark:
@@ -55,12 +53,8 @@ class MenuButton(QPushButton, UiMenuButton):
             painter.setBrush(QColor("#4797ce"))
             painter.drawRect(0, 0, 3, 45)
 
-    def mousePressEvent(
-            self,
-            event: QMouseEvent
-    ) -> None:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         """ Override some mouse click events """
-
         parent = self._parent(self)
         previous_active = parent.currently_checked_menu_button
         if self == previous_active:

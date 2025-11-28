@@ -1,13 +1,11 @@
 """ Menu button UI class """
 
-# Created: 27.08.2019
-# Changed: 28.08.2019
-
 __all__ = ['UiMenuButton']
 
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QLabel, QPushButton
-from PyQt5.QtCore import Qt, QRect
-from services import FontService, AnimationService
+
+from services import AnimationService, FontService
 from styles import qlabel_css
 
 

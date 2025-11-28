@@ -1,20 +1,27 @@
 """ Main window UI class """
 
-# Created: 27.08.2019
-# Changed: 22.01.2023
-
-
-from PyQt5.QtWidgets import (
-    QWidget, QLineEdit, QToolButton, QHBoxLayout, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QCompleter,
-    QAbstractItemView, QGraphicsDropShadowEffect, QStyledItemDelegate
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QColor, QPixmap, QIcon
-from widgets import MenuButton
-from styles import qwidget_css
-from models import QueryBuilder
-
 __all__ = ['UiRootWindow']
+
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QColor, QIcon, QPixmap
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QCompleter,
+    QGraphicsDropShadowEffect,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QStyledItemDelegate,
+    QTableWidget,
+    QTableWidgetItem,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+from models import QueryBuilder
+from styles import qwidget_css
+from widgets import MenuButton
 
 
 class UiRootWindow:
@@ -140,22 +147,14 @@ class UiRootWindow:
         # ------------------------------ TABLE PANEL WIDGETS ------------------------------
         self.bar_key.setObjectName("bar_key")
         self.table.setColumnCount(8)
-        self.table.setColumnWidth(0, 160)
-        self.table.setColumnWidth(1, 150)
-        self.table.setColumnWidth(2, 160)
-        self.table.setColumnWidth(3, 150)
-        self.table.setColumnWidth(4, 180)
-        self.table.setColumnWidth(5, 150)
-        self.table.setColumnWidth(6, 150)
-        self.table.setColumnWidth(7, 150)
-        self.table.setHorizontalHeaderItem(0, QTableWidgetItem("TITLE"))
-        self.table.setHorizontalHeaderItem(1, QTableWidgetItem("NAME"))
-        self.table.setHorizontalHeaderItem(2, QTableWidgetItem("EMAIL"))
-        self.table.setHorizontalHeaderItem(3, QTableWidgetItem("PASSWORD"))
-        self.table.setHorizontalHeaderItem(4, QTableWidgetItem("URL"))
-        self.table.setHorizontalHeaderItem(5, QTableWidgetItem("PHONE"))
-        self.table.setHorizontalHeaderItem(6, QTableWidgetItem("CREATED"))
-        self.table.setHorizontalHeaderItem(7, QTableWidgetItem("MODIFIED"))
+        for index, width in enumerate(
+            (160, 150, 160, 150, 180, 150, 150, 150)
+        ):
+            self.table.setColumnWidth(index, width)
+        for index, name in enumerate(
+            ("TITLE", "NAME", "EMAIL", "PASSWORD", "URL", "PHONE", "CREATED", "MODIFIED")
+        ):
+            self.table.setHorizontalHeaderItem(index, QTableWidgetItem(name))
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.table.setShowGrid(False)
@@ -193,14 +192,10 @@ class UiRootWindow:
         self.second_layout_menu.setContentsMargins(0, 0, 0, 0)
         self.second_layout_menu.setSpacing(0)
         self.second_layout_menu.addSpacing(20)
-        self.second_layout_menu.addWidget(self.b1, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b5, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b6, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b2, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b4, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b3, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b7, alignment=Qt.AlignCenter)
-        self.second_layout_menu.addWidget(self.b8, alignment=Qt.AlignCenter)
+        for button in (
+            self.b1, self.b5, self.b6, self.b2, self.b4, self.b3, self.b7, self.b8
+        ):
+            self.second_layout_menu.addWidget(button, alignment=Qt.AlignCenter)
         self.second_layout_menu.addStretch(1)
         self.second_layout_menu.addLayout(self.second_layout_menu_bottom_extra)
         self.bar_menu.setLayout(self.second_layout_menu)

@@ -3,8 +3,9 @@
 __all__ = ['AnimationService']
 
 import typing
+
 from attrs import define
-from PyQt5.QtCore import QRect, QPropertyAnimation
+from PyQt5.QtCore import QPropertyAnimation, QRect
 
 
 @define

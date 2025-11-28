@@ -3,7 +3,8 @@
 __all__ = ['QueryBuilder']
 
 from attrs import define
-from models import Session, Passwords
+
+from models import Passwords, Session
 
 
 @define(slots=True)

@@ -1,0 +1,13 @@
+[flake8]
+exclude =
+	.git,
+	__pycache__,
+	build,
+	dist,
+	.idea,
+	images,
+	logs,
+	sample_db,
+	ScreenShots,
+	.venv
+max-complexity = 10

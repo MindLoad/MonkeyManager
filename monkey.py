@@ -1,17 +1,18 @@
 """ Monkey manager - simple password keeper application """
 
 import sys
-import typing
-import source
-import ui
+
 import chime
-from PyQt5.QtWidgets import QApplication, QWidget, QToolButton, QLabel, QTableWidgetItem, QRadioButton
-from PyQt5.QtCore import Qt, QSize, QTimer, QEvent
+from PyQt5.QtCore import QEvent, QSize, Qt, QTimer
 from PyQt5.QtGui import QIcon, QResizeEvent
+from PyQt5.QtWidgets import QApplication, QLabel, QRadioButton, QTableWidgetItem, QToolButton, QWidget
+
+import ui
+import source
+from models.query_builder import QueryBuilder
 from services import ExportService, SearchService
 from tools import run_decode
 from widgets import AddNewKey
-from models.query_builder import *
 
 
 class Root(QWidget, ui.UiRootWindow):
@@ -42,7 +43,6 @@ class Root(QWidget, ui.UiRootWindow):
     @property
     def currently_checked_menu_button(self):
         """ return menu button that was clicked last """
-
         for button in (self.b1, self.b2, self.b3, self.b4, self.b5, self.b6, self.b7, self.b8):
             if button.check_mark is not None:
                 return button
@@ -55,7 +55,8 @@ class Root(QWidget, ui.UiRootWindow):
         self.search_result.setObjectName("search_result")
         self.second_layout_keys_childs.addWidget(self.search_result)
 
-    def eventFilter(self, source, event) -> QWidget.eventFilter:
+    def eventFilter(self, *args) -> QWidget.eventFilter:
+        event = args[1]
         if event.type() == QEvent.KeyPress:
             match event.key():
                 case Qt.Key_Delete if self.table.currentRow() >= 0:
@@ -67,7 +68,7 @@ class Root(QWidget, ui.UiRootWindow):
                     if not self.pass_input.text().strip():
                         self.secret_key_filter()
                         chime.error()
-                        return QWidget.eventFilter(self, source, event)
+                        return QWidget.eventFilter(self, *args)
                     row = self.table.currentRow()
                     data = (
                         self.table.item(row, 0).text(), self.table.item(row, 1).text(), self.table.item(row, 2).text(),
@@ -80,7 +81,7 @@ class Root(QWidget, ui.UiRootWindow):
                 case Qt.Key_Tab if self.search_field.hasFocus():
                     self.pass_input.setFocus(True)
                     return True
-        return QWidget.eventFilter(self, source, event)
+        return QWidget.eventFilter(self, *args)
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         if self._add:
@@ -110,7 +111,7 @@ class Root(QWidget, ui.UiRootWindow):
                 curr_item.deleteLater()
         self.table.setRowCount(0)
 
-    def build_table_rows(self, data: typing.Union[list, tuple]) -> None:
+    def build_table_rows(self, data: list | tuple) -> None:
         rows = len(data)
         if not rows:
             self.clear_child_table()
@@ -142,14 +143,10 @@ class Root(QWidget, ui.UiRootWindow):
             cell_created.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             cell_modified = QTableWidgetItem(item.modified.__str__())
             cell_modified.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.table.setItem(pos, 0, cell_title)
-            self.table.setItem(pos, 1, cell_login)
-            self.table.setItem(pos, 2, cell_email)
-            self.table.setItem(pos, 3, cell_password)
-            self.table.setItem(pos, 4, cell_url)
-            self.table.setItem(pos, 5, cell_phone)
-            self.table.setItem(pos, 6, cell_created)
-            self.table.setItem(pos, 7, cell_modified)
+            for index, cell in enumerate(
+                (cell_title, cell_login, cell_email, cell_password, cell_url, cell_phone, cell_created, cell_modified)
+            ):
+                self.table.setItem(pos, index, cell)
         for row in range(rows):
             self.table.setRowHeight(row, 45)
 
@@ -182,7 +179,7 @@ class Root(QWidget, ui.UiRootWindow):
     def get_keys(self, status, refresh=None) -> None:
         self.table.setSortingEnabled(False)
         self.table.setRowCount(0)
-        sender = self.sender().text() if not refresh else refresh
+        sender = refresh if refresh else self.sender().text()
         query = QueryBuilder.retrieve_children(parent=sender)
         self.build_table_rows(query)
         self.table.setSortingEnabled(True)
@@ -219,7 +216,7 @@ class Root(QWidget, ui.UiRootWindow):
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "2.1.0"
+    __version__ = "2.1.1"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()

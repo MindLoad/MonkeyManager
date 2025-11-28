@@ -1,0 +1,52 @@
+[project]
+name = "monkey.manager"
+version = "2.1.1"
+description = "Password storage"
+readme = "README.md"
+requires-python = "==3.13.1"
+dependencies = [
+    "pycryptodome",
+    "PyQt5",
+    "attrs",
+    "chime",
+    "sqlalchemy",
+    "loguru",
+    "ruff"
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=8.30.0",
+]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+exclude = [
+  ".venv",
+  ".ruff_cache",
+  ".gitignore",
+  "README.md"
+]
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  "W",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+

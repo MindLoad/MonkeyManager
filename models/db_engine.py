@@ -5,13 +5,12 @@ __all__ = [
     'Session'
 ]
 
-from sqlalchemy import create_engine
-from sqlalchemy import Table, Column
-from sqlalchemy import String, Integer, BLOB
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
 from pathlib import Path
+
+from sqlalchemy import BLOB, Column, Integer, String, Table, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 
 # DB Engine
 db_path = Path(__file__).cwd() / 'models/passwords.db'
