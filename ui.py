@@ -25,7 +25,7 @@ from widgets import MenuButton
 
 
 class UiRootWindow:
-    """ Root window UI class """
+    """Root window UI class."""
 
     def __init__(self):
         # ELEMENTS
@@ -65,7 +65,7 @@ class UiRootWindow:
         self.second_layout_keys_childs = QHBoxLayout()
 
     def setup_ui(self, root_window) -> None:
-        """ setup ui """
+        """setup ui."""
 
         root_window.setStyleSheet(qwidget_css.root_style)
         self.init_elements()
@@ -89,10 +89,7 @@ class UiRootWindow:
         return effect
 
     def init_elements(self) -> None:
-        """
-        Initialize main elements
-        :return: None
-        """
+        """Initialize main elements."""
 
         # ------------------------------ TOP ELEMENTS -------------------------------------
         # LOGO with monkey face
@@ -133,11 +130,7 @@ class UiRootWindow:
         self.search_field.setCompleter(self.completer)
 
     def init_widgets(self) -> None:
-        """
-        Initialize main widgets
-        :return: None
-        """
-
+        """Initialize main widgets."""
         # ------------------------------ TOP WIDGETS --------------------------------------
         self.bar_top.setObjectName("bar_top")
         self.bar_top.setFixedHeight(50)
@@ -164,11 +157,7 @@ class UiRootWindow:
         self.table.installEventFilter(self)
 
     def init_layouts(self, root_window) -> None:
-        """
-        Initialize main layouts
-        :return: None
-        """
-
+        """Initialize main layouts."""
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
