@@ -64,6 +64,16 @@ class QueryBuilder:
             session.commit()
 
     @classmethod
+    def update_item_password(
+        cls, item_id: int, password: bytes
+    ) -> None:
+        """Update single item password"""
+        with Session() as session:
+            obj = session.query(Passwords).where(Passwords.id == item_id).first()
+            obj.password = password
+            session.commit()
+
+    @classmethod
     def retrieve_item_password(cls, item_id: int) -> Passwords:
         """ Retrieve item """
         with Session() as session:

@@ -10,9 +10,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QComboBox, QFrame, QHBoxLayout, QLineEdit, QPushButton, QRadioButton, QVBoxLayout, QWidget
 
 from models import QueryBuilder
-from services import AnimationService
+from services import AnimationService, CryptoHandler
 from styles import qframe_css
-from tools import run_encode
 
 
 class AddNewKey(QFrame):
@@ -162,11 +161,11 @@ class AddNewKey(QFrame):
         self.child.setText(self.sender().text())
 
     def _save(self):
-        crypt_password = run_encode(self.secret_key, self.password.text().encode("utf-8"))
+        cipher = CryptoHandler.encrypt(self.secret_key, self.password.text().encode("utf-8"))
         if not self.data:
             QueryBuilder.create_item(
                 parent=self.combo.currentText(), child=self.child.text(), title=self.title.text(),
-                login=self.name.text(), email=self.email.text(), password=crypt_password, url=self.url.text(),
+                login=self.name.text(), email=self.email.text(), password=cipher, url=self.url.text(),
                 phone=self.phone.text(), created=self.created.text(), modified=self.modified.text()
             )
         else:
@@ -175,7 +174,7 @@ class AddNewKey(QFrame):
                 title=self.title.text(),
                 login=self.name.text(),
                 email=self.email.text(),
-                password=crypt_password,
+                password=cipher,
                 url=self.url.text(),
                 phone=self.phone.text(),
                 modified=self.modified.text()

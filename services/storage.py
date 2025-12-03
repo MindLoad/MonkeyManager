@@ -10,7 +10,7 @@ from attrs import define
 from loguru import logger
 
 from models import Passwords, Session
-from tools import run_decode
+from .encrypt import CryptoHandler
 
 logger.add(
     Path(__file__).cwd() / 'logs/errors.log',
@@ -28,7 +28,7 @@ class ExportService:
     def decode_password_field(cls, key: str, password: bytes) -> str:
         """ Decode password """
         try:
-            return run_decode(key, password).decode("utf-8")
+            return CryptoHandler.decrypt(key, password).decode("utf-8")
         except UnicodeDecodeError:
             logger.error(f'Error while decrypt password / key: {key}')
             return 'Invalid'

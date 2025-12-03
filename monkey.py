@@ -10,8 +10,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QRadioButton, QTableWidgetItem
 import ui
 import source
 from models.query_builder import QueryBuilder
-from services import ExportService, SearchService
-from tools import run_decode
+from services import CryptoHandler, ExportService, SearchService
 from widgets import AddNewKey
 
 
@@ -186,21 +185,20 @@ class Root(QWidget, ui.UiRootWindow):
         self.refresh_element.setEnabled(True)
         self.refresh_element.setStatusTip(sender)
 
-    def click_item(self, row, column, decode_res="unknown error") -> None:
+    def click_item(self, row, column) -> None:
         if column == 3:
             if len(self.pass_input.text().strip()) == 0:
                 self.secret_key_filter()
                 chime.error()
                 return
             self.table.blockSignals(True)
-            query = QueryBuilder.retrieve_item_password(item_id=self.table.currentItem().statusTip())
-            try:
-                decode_res = run_decode(self.pass_input.text(), query.password).decode("utf-8")
-            except UnicodeDecodeError:
-                decode_res = "error key"
-                chime.error()
-            finally:
-                self.table.item(row, 3).setText(decode_res)
+            item_id = self.table.currentItem().statusTip()
+            query = QueryBuilder.retrieve_item_password(item_id=item_id)
+            decrypted, new_cipher = CryptoHandler.decrypt(self.pass_input.text(), query.password)
+            if new_cipher is not None:
+                # TODO: move logger from CryptoHand to here and add itemID for history backup
+                QueryBuilder.update_item_password(item_id=item_id, password=new_cipher)
+            self.table.item(row, 3).setText(decrypted)
             self.table.blockSignals(False)
 
     def _search(self) -> None:
@@ -216,7 +214,7 @@ class Root(QWidget, ui.UiRootWindow):
 
 if __name__ == "__main__":
     __author__ = 'MindLoad'
-    __version__ = "2.1.1"
+    __version__ = "2.1.2"
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(":/icon"))
     main = Root()
