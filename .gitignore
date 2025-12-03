@@ -104,3 +104,4 @@ crypt*
 *.sql
 *.db
 export.json
+.ruff_cache/
